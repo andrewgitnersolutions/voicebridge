@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+*.zip
+
+# Dependencies
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets / credentials
+# OAuth Client ID: 491985013758-uhh5du5creuedkopfuajuldpdtu2bg52.apps.googleusercontent.com
+# Note: The client_id in manifest.json is a public identifier (not a secret) —
+# Chrome extensions never expose a client_secret. It's safe in the repo,
+# but listed here for reference.

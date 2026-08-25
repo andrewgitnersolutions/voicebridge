@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceBridge Settings</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="vb-popup-container">
+    <!-- Header -->
+    <header class="vb-popup-header">
+      <div class="vb-popup-brand">
+        <img src="../icons/icon-48.png" alt="VoiceBridge" class="vb-popup-logo">
+        <div>
+          <h1 class="vb-popup-title">VoiceBridge</h1>
+          <p class="vb-popup-subtitle">SpEd & Classroom Voice Tool</p>
+        </div>
+      </div>
+      <div class="vb-badge-ferpa" title="FERPA & COPPA Compliant">FERPA Safe</div>
+    </header>
+
+    <!-- Quick Action -->
+    <div class="vb-quick-record-card">
+      <button class="vb-btn-big-record" id="btn-quick-record" aria-label="Start Voice Recording">
+        <span class="vb-mic-glow">🎙️</span>
+        <div class="vb-record-text">
+          <strong>Record Voice Note</strong>
+          <small>1-click audio response</small>
+        </div>
+      </button>
+    </div>
+
+    <!-- Live Microphone Test & Device Selection -->
+    <section class="vb-section">
+      <h2 class="vb-section-title">Microphone Settings & Test</h2>
+
+      <!-- Microphone Device Selector -->
+      <div class="vb-form-row">
+        <label for="select-mic">Microphone:</label>
+        <select id="select-mic" class="vb-select" style="max-width: 200px;">
+          <option value="default">Default Microphone</option>
+        </select>
+      </div>
+
+      <div class="vb-mic-test-container">
+        <div class="vb-mic-meter-track">
+          <div class="vb-mic-meter-bar" id="mic-meter-fill"></div>
+        </div>
+        <button class="vb-btn-secondary vb-btn-sm" id="btn-test-mic">Test Mic</button>
+      </div>
+      <small class="vb-hint-text" id="mic-test-status">Click to test microphone audio level.</small>
+    </section>
+
+    <!-- Accessibility / UDL Accommodations -->
+    <section class="vb-section">
+      <h2 class="vb-section-title">Accessibility & Accommodations</h2>
+
+      <!-- Font Selector -->
+      <div class="vb-form-row">
+        <label for="select-font">Reading Font:</label>
+        <select id="select-font" class="vb-select">
+          <option value="lexend">Lexend (Fluent Reading)</option>
+          <option value="opendyslexic">OpenDyslexic (Dyslexia Friendly)</option>
+          <option value="system">System Default</option>
+        </select>
+      </div>
+
+      <!-- Theme Selector -->
+      <div class="vb-form-row">
+        <label for="select-theme">Color Theme:</label>
+        <select id="select-theme" class="vb-select">
+          <option value="default">Default Blue & White</option>
+          <option value="pastel">Soft Pastel (Low Glare)</option>
+          <option value="high-contrast">High Contrast (Yellow / Black)</option>
+        </select>
+      </div>
+
+      <!-- Single Key Shortcut -->
+      <div class="vb-form-toggle-row">
+        <label for="toggle-shortcuts">Single-Key Shortcuts (Space / Esc)</label>
+        <input type="checkbox" id="toggle-shortcuts" checked>
+      </div>
+
+      <!-- Silence Detection Alert -->
+      <div class="vb-form-toggle-row">
+        <label for="toggle-silence">Mute / Silence Warning</label>
+        <input type="checkbox" id="toggle-silence" checked>
+      </div>
+
+      <!-- Auto-Start Recording Toggle -->
+      <div class="vb-form-toggle-row">
+        <label for="toggle-autostart">Auto-start recording on open</label>
+        <input type="checkbox" id="toggle-autostart">
+      </div>
+    </section>
+
+    <!-- Storage & Privacy Info -->
+    <footer class="vb-popup-footer">
+      <div class="vb-storage-info">
+        <span>📁 <strong>Storage:</strong> Student's Google Drive ($0 cost)</span>
+        <span>🔒 <strong>Privacy:</strong> Zero external audio servers</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

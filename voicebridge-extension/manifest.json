@@ -1,0 +1,75 @@
+{
+  "manifest_version": 3,
+  "name": "VoiceBridge — Voice Feedback & Response for Classrooms",
+  "short_name": "VoiceBridge",
+  "version": "1.0.0",
+  "description": "Accessible voice recording for Special Education and K-12. Record oral responses in Google Classroom, Docs & Slides.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "VoiceBridge Controls & Accessibility Settings"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "permissions": [
+    "storage",
+    "offscreen",
+    "identity",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://classroom.google.com/*",
+    "https://docs.google.com/*",
+    "https://slides.google.com/*",
+    "https://www.googleapis.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://classroom.google.com/*",
+        "https://docs.google.com/*",
+        "https://slides.google.com/*"
+      ],
+      "css": [
+        "content/content.css"
+      ],
+      "js": [
+        "content/player.js",
+        "content/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/icon-16.png",
+        "icons/icon-48.png",
+        "icons/icon-128.png",
+        "content/content.css"
+      ],
+      "matches": [
+        "https://classroom.google.com/*",
+        "https://docs.google.com/*",
+        "https://slides.google.com/*"
+      ]
+    }
+  ],
+  "oauth2": {
+    "client_id": "491985013758-uhh5du5creuedkopfuajuldpdtu2bg52.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.file"
+    ]
+  }
+}

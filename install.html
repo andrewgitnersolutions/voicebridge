@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-font="lexend">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Installation & District Deployment Guide — VoiceBridge</title>
+  <meta name="description" content="Step-by-step installation guide for VoiceBridge on Chrome OS, Mac, and Windows. Includes Google Workspace Admin Console force-deployment policies for K-12 school districts.">
+  <link rel="icon" type="image/png" href="assets/images/icon-48.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    .guide-content {
+      padding: 60px 0 100px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .guide-step {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-md);
+    }
+    .guide-step h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .step-badge {
+      background: var(--brand-primary);
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo" aria-label="VoiceBridge Home">
+        <img src="assets/images/icon-128.png" alt="VoiceBridge Logo">
+        <span>VoiceBridge</span>
+        <span class="brand-badge">Deployment Guide</span>
+      </a>
+
+      <div class="nav-actions">
+        <a href="index.html" class="btn btn-secondary btn-sm">← Overview</a>
+        <a href="https://chrome.google.com/webstore" class="btn btn-primary btn-sm" target="_blank" rel="noopener">Add to Chrome</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container guide-content">
+    <div class="section-header" style="text-align: left; margin-bottom: 40px;">
+      <span class="badge">Deployment Documentation</span>
+      <h1 style="font-size: 2.6rem; font-weight: 800; margin-top: 12px; color: var(--text-primary);">VoiceBridge Installation & District Setup</h1>
+      <p style="color: var(--text-secondary); font-size: 1.1rem; margin-top: 8px;">
+        Choose between single-user Chrome Web Store installation or automated district-wide force-deployment for managed student Chromebooks.
+      </p>
+    </div>
+
+    <!-- Section 1: Individual Teacher & Student Install -->
+    <div class="guide-step">
+      <h2><span class="step-badge">1</span> Individual Chrome Web Store Installation</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 16px;">For individual educators, tutors, and parents setting up VoiceBridge on a personal or unmanaged device:</p>
+      <ol style="padding-left: 24px; color: var(--text-secondary); line-height: 1.8;">
+        <li>Visit the <a href="https://chrome.google.com/webstore" target="_blank" rel="noopener">VoiceBridge Chrome Web Store Listing</a>.</li>
+        <li>Click <strong>Add to Chrome</strong> and confirm by clicking <strong>Add extension</strong> in the browser prompt.</li>
+        <li>Open <a href="https://classroom.google.com" target="_blank" rel="noopener">Google Classroom</a> or <a href="https://docs.google.com" target="_blank" rel="noopener">Google Docs</a>.</li>
+        <li>The VoiceBridge floating recording button will automatically appear inside any Private Comment box!</li>
+      </ol>
+    </div>
+
+    <!-- Section 2: Google Workspace Admin Console Force Deployment -->
+    <div class="guide-step">
+      <h2><span class="step-badge">2</span> District-Wide Google Workspace Force Deployment</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 16px;">
+        District IT administrators can automatically install VoiceBridge on all managed student Chromebooks with zero action required from students or teachers:
+      </p>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Step A: Access Chrome App Management</h4>
+        <p style="color: var(--text-secondary);">Log into <a href="https://admin.google.com" target="_blank" rel="noopener">admin.google.com</a> as a Super Admin and navigate to:</p>
+        <div class="code-block">Menu → Devices → Chrome → Apps & extensions → Users & browsers</div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Step B: Select Organizational Unit</h4>
+        <p style="color: var(--text-secondary);">Select the target OU in the left sidebar (e.g. <code>All Students</code>, <code>Grade 3-5</code>, or <code>Special Education Accommodations</code>).</p>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Step C: Set Installation Policy to "Force Install"</h4>
+        <p style="color: var(--text-secondary);">Click the yellow <strong>+</strong> button in the bottom right, select <strong>Add Chrome app or extension by ID</strong>, enter the VoiceBridge ID, and choose:</p>
+        <div class="code-block">Installation policy: "Force install" or "Force install + pin to ChromeOS taskbar"</div>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Step D: Pre-Grant Microphone Access (Recommended for SpEd)</h4>
+        <p style="color: var(--text-secondary);">To avoid confusing browser permission popups for younger or Special Education students, navigate to:</p>
+        <div class="code-block">Devices → Chrome → Settings → Users & browsers → Audio input (Microphone) → Allowed URLs for audio capture: https://classroom.google.com</div>
+      </div>
+    </div>
+
+    <!-- Section 3: Local Developer / Testing Unpacked -->
+    <div class="guide-step">
+      <h2><span class="step-badge">3</span> Testing Unpacked (Local Development)</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 16px;">To load and test VoiceBridge locally from source code:</p>
+      <ol style="padding-left: 24px; color: var(--text-secondary); line-height: 1.8;">
+        <li>Open Chrome and navigate to <code>chrome://extensions/</code>.</li>
+        <li>Enable the <strong>Developer mode</strong> toggle in the top right.</li>
+        <li>Click <strong>Load unpacked</strong> and select the <code>voicebridge-extension</code> directory.</li>
+        <li>Confirm VoiceBridge appears with version 1.0.0 and all features active.</li>
+      </ol>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-bottom">
+      <div>© 2026 VoiceBridge Project. Built for Inclusive Classrooms.</div>
+      <div><a href="index.html">← Back to Overview</a></div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

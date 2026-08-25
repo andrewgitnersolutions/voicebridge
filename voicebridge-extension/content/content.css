@@ -1,0 +1,521 @@
+/**
+ * VoiceBridge — Content Stylesheet (UDL & WCAG AAA Accessible)
+ * Includes high-contrast colorways, Lexend/OpenDyslexic typography, and 48px+ touch targets.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap');
+
+/* --- Root Variables & Theme Tokens --- */
+:root {
+  --vb-font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+  --vb-primary: #2563eb;
+  --vb-primary-hover: #1d4ed8;
+  --vb-success: #16a34a;
+  --vb-success-hover: #15803d;
+  --vb-warning: #d97706;
+  --vb-warning-hover: #b45309;
+  --vb-danger: #dc2626;
+  --vb-surface: #ffffff;
+  --vb-surface-dark: #0f172a;
+  --vb-text: #0f172a;
+  --vb-text-muted: #475569;
+  --vb-border: #cbd5e1;
+  --vb-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --vb-radius: 16px;
+  --vb-min-target: 48px;
+}
+
+/* OpenDyslexic Font Option */
+.vb-font-dyslexic {
+  --vb-font-family: 'OpenDyslexic', 'Comic Sans MS', 'Lexend', sans-serif !important;
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+}
+
+/* High Contrast Yellow/Black Theme */
+.vb-theme-high-contrast {
+  --vb-primary: #facc15;
+  --vb-primary-hover: #eab308;
+  --vb-success: #4ade80;
+  --vb-warning: #fb923c;
+  --vb-danger: #f87171;
+  --vb-surface: #000000;
+  --vb-surface-dark: #000000;
+  --vb-text: #ffffff;
+  --vb-text-muted: #fef08a;
+  --vb-border: #facc15;
+}
+
+/* Soft Pastel / Scotopic Sensitivity Theme */
+.vb-theme-pastel {
+  --vb-primary: #4338ca;
+  --vb-surface: #fefce8; /* Soft warm cream */
+  --vb-text: #1e1b4b;
+  --vb-border: #fed7aa;
+}
+
+/* --- Floating VoiceBridge Trigger Pill --- */
+#voicebridge-floating-trigger {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999999;
+  font-family: var(--vb-font-family);
+  user-select: none;
+}
+
+.vb-floating-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--vb-min-target);
+  padding: 10px 20px;
+  background-color: var(--vb-primary);
+  color: #ffffff;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  box-shadow: var(--vb-shadow);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.vb-floating-btn:hover {
+  background-color: var(--vb-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
+}
+
+.vb-floating-btn:focus-visible {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.5);
+}
+
+.vb-floating-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Main Accessible Recording Modal & Widget --- */
+#voicebridge-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 10000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: var(--vb-font-family);
+  animation: vbFadeIn 0.2s ease-out;
+}
+
+@keyframes vbFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.vb-card {
+  width: 100%;
+  max-width: 520px;
+  background: var(--vb-surface);
+  color: var(--vb-text);
+  border: 2px solid var(--vb-border);
+  border-radius: var(--vb-radius);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Card Header */
+.vb-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--vb-border);
+  padding-bottom: 12px;
+}
+
+.vb-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--vb-primary);
+}
+
+.vb-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--vb-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: background 0.15s;
+}
+
+.vb-close-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--vb-text);
+}
+
+/* Recording Status Display */
+.vb-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(37, 99, 235, 0.06);
+  border-radius: 12px;
+  padding: 12px 18px;
+}
+
+.vb-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.vb-pulse-dot {
+  width: 14px;
+  height: 14px;
+  background-color: var(--vb-danger);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  animation: vbPulse 1.5s infinite;
+}
+
+@keyframes vbPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.vb-timer {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  color: var(--vb-text);
+}
+
+/* Live Waveform Visualizer */
+.vb-waveform-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 80px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  padding: 0 16px;
+}
+
+.vb-wave-bar {
+  width: 6px;
+  height: 12px;
+  background-color: var(--vb-primary);
+  border-radius: 999px;
+  transition: height 0.08s ease-in-out;
+}
+
+/* Silence Warning Alert */
+.vb-silence-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: vbFadeIn 0.3s ease-out;
+}
+
+.vb-ready-dot {
+  width: 12px;
+  height: 12px;
+  background-color: var(--vb-success);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.vb-ready-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vb-mic-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--vb-border);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.vb-mic-icon-large {
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vb-mic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.vb-mic-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--vb-text-muted);
+}
+
+.vb-mic-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vb-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vb-shortcut-hint {
+  font-size: 13px;
+  color: var(--vb-text-muted);
+  background: rgba(37, 99, 235, 0.04);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vb-shortcut-hint kbd {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-family: inherit;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.vb-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.vb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--vb-min-target);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  outline: none;
+}
+
+.vb-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.vb-btn-start {
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.vb-btn-start:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.vb-btn-spinner {
+  animation: vbSpin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes vbSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.vb-btn-primary {
+  background-color: var(--vb-primary);
+  color: #ffffff;
+}
+
+.vb-btn-primary:hover {
+  background-color: var(--vb-primary-hover);
+}
+
+.vb-btn-success {
+  background-color: var(--vb-success);
+  color: #ffffff;
+}
+
+.vb-btn-success:hover {
+  background-color: var(--vb-success-hover);
+}
+
+.vb-btn-warning {
+  background-color: transparent;
+  border-color: var(--vb-warning);
+  color: var(--vb-warning);
+}
+
+.vb-btn-warning:hover {
+  background-color: #fffbeb;
+}
+
+.vb-btn-secondary {
+  background-color: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.vb-btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* --- Inline Audio Player Card in Google Classroom / Docs --- */
+.voicebridge-inline-player {
+  margin: 8px 0;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 5px solid var(--vb-primary);
+  border-radius: 12px;
+  font-family: var(--vb-font-family);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 480px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.vb-player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.vb-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vb-play-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--vb-primary);
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform 0.1s, background 0.15s;
+}
+
+.vb-play-btn:hover {
+  background: var(--vb-primary-hover);
+  transform: scale(1.05);
+}
+
+.vb-scrubber-track {
+  flex: 1;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+}
+
+.vb-scrubber-progress {
+  height: 100%;
+  background: var(--vb-primary);
+  border-radius: 999px;
+  width: 0%;
+}
+
+.vb-speed-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #1e293b;
+}
+
+.vb-speed-btn:hover {
+  background: #cbd5e1;
+}
+
+/* Injected Classroom Private Comment Mic Icon */
+.vb-injected-mic-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: var(--vb-primary);
+  cursor: pointer;
+  margin: 0 4px;
+  transition: all 0.15s;
+  outline: none;
+}
+
+.vb-injected-mic-btn:hover {
+  background: #dbeafe;
+  transform: scale(1.1);
+}

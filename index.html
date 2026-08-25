@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" data-font="lexend">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceBridge — Accessible Voice Feedback & Response for Classrooms</title>
+  <meta name="description" content="Accessible voice recording for Special Education (SpEd) and Universal Design for Learning (UDL). Record oral responses in Google Classroom, Docs & Slides with $0 developer storage cost.">
+  <link rel="icon" type="image/png" href="assets/images/icon-48.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+  <!-- Universal Design for Learning (UDL) Accessibility Toolbar -->
+  <aside class="a11y-bar" aria-label="Accessibility & Display Controls">
+    <div class="container a11y-bar-content">
+      <div class="a11y-label">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+        <span>UDL Accessibility Bar:</span>
+      </div>
+
+      <div class="a11y-controls">
+        <!-- Font Selection -->
+        <div class="a11y-group">
+          <span class="a11y-group-title">Font:</span>
+          <button class="a11y-btn active" data-set-font="lexend" title="Lexend - Designed to reduce visual stress and improve reading fluency">Lexend</button>
+          <button class="a11y-btn" data-set-font="opendyslexic" title="OpenDyslexic - High bottom-weight letters for dyslexia support">OpenDyslexic</button>
+          <button class="a11y-btn" data-set-font="system" title="System Standard Font">Standard</button>
+        </div>
+
+        <!-- Theme Selection -->
+        <div class="a11y-group">
+          <span class="a11y-group-title">Theme:</span>
+          <button class="a11y-btn active" data-set-theme="light" title="Clean Light Theme">Light</button>
+          <button class="a11y-btn" data-set-theme="high-contrast" title="WCAG AAA 7:1 High Contrast Yellow & Black">High Contrast</button>
+          <button class="a11y-btn" data-set-theme="pastel" title="Soft Pastel Low-Glare Theme">Pastel</button>
+          <button class="a11y-btn" data-set-theme="dark" title="Dark Mode">Dark</button>
+        </div>
+
+        <!-- Text Size -->
+        <div class="a11y-group">
+          <span class="a11y-group-title">Text Size:</span>
+          <button class="a11y-btn" id="decreaseFontSize" title="Decrease font size">A-</button>
+          <button class="a11y-btn" id="resetFontSize" title="Reset font size">Reset</button>
+          <button class="a11y-btn" id="increaseFontSize" title="Increase font size">A+</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo" aria-label="VoiceBridge Home">
+        <img src="assets/images/icon-128.png" alt="VoiceBridge Logo">
+        <span>VoiceBridge</span>
+        <span class="brand-badge">K-12 & SpEd</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#simulator" class="nav-link">Live Simulator</a></li>
+          <li><a href="#accessibility" class="nav-link">UDL & Inclusion</a></li>
+          <li><a href="#architecture" class="nav-link">$0 Storage Cost</a></li>
+          <li><a href="#deployment" class="nav-link">District Setup</a></li>
+          <li><a href="privacy-policy.html" class="nav-link">Privacy Policy</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="install.html" class="btn btn-secondary btn-sm">Install Guide</a>
+        <a href="https://chrome.google.com/webstore" class="btn btn-primary btn-sm" target="_blank" rel="noopener">Add to Chrome</a>
+        <button class="mobile-toggle" aria-label="Toggle navigation menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <div class="hero-tag">
+            <span class="badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+              Universal Design for Learning (UDL) & SpEd
+            </span>
+          </div>
+
+          <h1 class="hero-title">
+            Bridging the Gap Between <span class="hero-title-highlight">Thought & Expression</span>
+          </h1>
+
+          <p class="hero-description">
+            Empower students with dysgraphia, speech accommodations, and executive functioning challenges to record oral responses directly in Google Classroom, Docs & Slides. Built with 100% student-owned storage and $0 developer server costs.
+          </p>
+
+          <div class="hero-actions">
+            <a href="https://chrome.google.com/webstore" class="btn btn-primary btn-lg" target="_blank" rel="noopener">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+              Add to Chrome — Free
+            </a>
+            <a href="#simulator" class="btn btn-secondary btn-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              Try Live Simulator
+            </a>
+          </div>
+
+          <div class="hero-trust-row">
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>FERPA & COPPA Compliant</span>
+            </div>
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>WCAG AAA 7:1 Contrast</span>
+            </div>
+            <div class="trust-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>$0 District Storage Bill</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-card">
+            <img src="assets/images/promo-marquee-1400x560.png" alt="VoiceBridge Extension Banner - Accessible Voice Recording in Google Classroom" width="1400" height="560">
+            <div class="hero-card-caption">
+              <span><strong>Google Classroom Integration</strong> • In-line voice notes</span>
+              <span class="badge" style="font-size: 0.75rem;">Chrome MV3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Simulator Section -->
+    <section id="simulator" class="simulator-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="badge">Interactive Experience</span>
+          <h2 class="section-title">Test the VoiceBridge In-Browser Sandbox</h2>
+          <p class="section-subtitle">Experience how easy it is for a student with an IEP or accommodation to record an oral answer and submit it into a Google Classroom Private Comment.</p>
+        </div>
+
+        <div class="simulator-container">
+          <div class="simulator-header">
+            <div class="sim-window-dots">
+              <span class="sim-dot red"></span>
+              <span class="sim-dot yellow"></span>
+              <span class="sim-dot green"></span>
+            </div>
+            <div class="sim-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              VoiceBridge Simulator • Google Classroom Private Comment
+            </div>
+            <div>
+              <span class="badge" style="font-size: 0.75rem;">Space to Record • Esc to Cancel</span>
+            </div>
+          </div>
+
+          <div class="simulator-body">
+            <!-- Simulated Classroom Header -->
+            <div class="classroom-mock-header">
+              <div class="classroom-avatar">MS</div>
+              <div>
+                <div class="classroom-prompt">Assignment: "Describe the water cycle and explain evaporation in your own words."</div>
+                <div class="classroom-tag">Private comments • Only visible to you and Mrs. Smith</div>
+              </div>
+            </div>
+
+            <!-- VoiceBridge Recording Sandbox -->
+            <div id="recordingSandbox" class="recording-sandbox state-idle">
+              <div class="waveform-canvas-container">
+                <canvas id="waveformCanvas"></canvas>
+                <div id="waveformPlaceholder" class="waveform-placeholder">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                  <span>Click <strong>Start Voice Response</strong> or press <kbd>Space</kbd> to begin speaking</span>
+                </div>
+              </div>
+
+              <div id="simTimer" class="sim-timer">00:00</div>
+
+              <div class="sim-controls">
+                <button id="btnSimRecord" class="btn btn-record btn-lg">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+                  Start Voice Response
+                </button>
+
+                <button id="btnSimStop" class="btn btn-stop btn-lg" style="display: none;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                  Stop & Review
+                </button>
+
+                <button id="btnSimRedo" class="btn btn-secondary btn-lg" style="display: none;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  Redo Recording
+                </button>
+
+                <button id="btnSimInsert" class="btn btn-insert btn-lg" style="display: none;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  Insert Voice Note
+                </button>
+              </div>
+            </div>
+
+            <!-- Simulated Google Classroom Comment Box -->
+            <div class="comment-box-mock">
+              <div class="comment-input-area" id="commentArea">
+                <span>Add private comment to Mrs. Smith...</span>
+                
+                <div id="injectedAudioCard" class="injected-audio-card" style="display: none;">
+                  <div class="audio-card-meta">
+                    <div class="audio-card-icon">🎙️</div>
+                    <div class="audio-card-text">
+                      <strong>🎙️ Voice Note from Alex</strong>
+                      <span id="injectedCardDuration">Voice Note (00:14) • Saved to Student Drive</span>
+                    </div>
+                  </div>
+                  <span class="badge" style="background: var(--brand-accent-light); color: var(--brand-accent);">Attached</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section with High-Res Store Assets -->
+    <section id="features" class="features-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="badge">Designed for Inclusion</span>
+          <h2 class="section-title">Built Purposefully for Students & Teachers</h2>
+          <p class="section-subtitle">Every interaction is stripped of complexity to maximize focus, eliminate anxiety, and empower learning.</p>
+        </div>
+
+        <!-- Feature 1 -->
+        <div class="feature-block">
+          <div class="feature-content">
+            <span class="feature-tag">Google Classroom Focus</span>
+            <h3 class="feature-title">Frictionless 4-Action Flow in Private Comments</h3>
+            <p class="feature-text">
+              VoiceBridge directly injects into 1-on-1 Private Comments while intentionally excluding public stream comments. This protects student dignity, removes peer social anxiety, and keeps communication safe between student and teacher.
+            </p>
+            <ul class="feature-points">
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>Linear Simplicity:</strong> Record $ightarrow$ Speak $ightarrow$ Review $ightarrow$ Submit. Zero nested popups.</span>
+              </li>
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>Silence & Mute Detection:</strong> Warns students if their mic is muted before they submit.</span>
+              </li>
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>Real-time Waveform:</strong> Clear visual feedback that audio is recording properly.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="feature-image-wrapper">
+            <img src="assets/images/screenshot-1-recording-1280x800.png" alt="VoiceBridge Student Recording Interface in Google Classroom" width="1280" height="800" loading="lazy">
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-block reverse">
+          <div class="feature-content">
+            <span class="feature-tag">Educator Productivity</span>
+            <h3 class="feature-title">1-Click Inline Audio Player with Speed Controls</h3>
+            <p class="feature-text">
+              Teachers can listen to student oral responses directly inside Google Classroom grading workflows and Google Docs comment sidebars without opening new tabs or downloading files.
+            </p>
+            <ul class="feature-points">
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>Variable Speed Playback:</strong> 0.75x, 1.0x, 1.25x, 1.5x, and 2.0x speeds to review student submissions rapidly.</span>
+              </li>
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>Visual Audio Scrubber:</strong> Jump to any section of the voice recording with a single click.</span>
+              </li>
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>Quick Voice Feedback:</strong> Teachers can leave 1-click audio replies back to students.</span>
+              </li>
+            </ul>
+
+            <!-- Interactive Demo Player Widget -->
+            <div class="interactive-player-demo">
+              <div class="player-demo-bar">
+                <button id="demoPlayBtn" class="player-play-btn" aria-label="Play sample voice note">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+                <div id="demoScrubberTrack" class="player-scrubber-track">
+                  <div id="demoScrubberFill" class="player-scrubber-fill"></div>
+                </div>
+                <div id="demoTimeDisplay" class="player-time">00:17 / 00:48</div>
+              </div>
+              <div class="player-speed-pills">
+                <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 6px;">Speed:</span>
+                <button class="speed-pill" data-speed="0.75">0.75x</button>
+                <button class="speed-pill active" data-speed="1.0">1.0x</button>
+                <button class="speed-pill" data-speed="1.25">1.25x</button>
+                <button class="speed-pill" data-speed="1.5">1.5x</button>
+                <button class="speed-pill" data-speed="2.0">2.0x</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="feature-image-wrapper">
+            <img src="assets/images/screenshot-2-teacher-player-1280x800.png" alt="VoiceBridge 1-Click Teacher Inline Audio Player" width="1280" height="800" loading="lazy">
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div id="accessibility" class="feature-block">
+          <div class="feature-content">
+            <span class="feature-tag">Special Education & Accessibility</span>
+            <h3 class="feature-title">Universal Design for Learning (UDL) by Default</h3>
+            <p class="feature-text">
+              VoiceBridge meets strict WCAG AAA guidelines. Whether a student uses an assistive switch, high-contrast display, or open-dyslexic typography, VoiceBridge adapts effortlessly.
+            </p>
+            <ul class="feature-points">
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>Lexend & OpenDyslexic Typography:</strong> Clinically proven fonts that reduce visual crowding and character flipping.</span>
+              </li>
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>WCAG AAA 7:1 High Contrast Theme:</strong> High-visibility yellow-on-black for low-vision learners.</span>
+              </li>
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>48px+ Touch Targets:</strong> Easy interaction for students using touch Chromebooks or motor accommodations.</span>
+              </li>
+              <li class="feature-point">
+                <span class="feature-point-icon">✓</span>
+                <span><strong>Single-Key Switch Access:</strong> Press Space to record/stop and Esc to cancel.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="feature-image-wrapper">
+            <img src="assets/images/screenshot-3-accessibility-1280x800.png" alt="VoiceBridge Accessibility Settings & Theme Options" width="1280" height="800" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture & $0 Developer Cost Section -->
+    <section id="architecture" class="architecture-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="badge">Zero Infrastructure Cost</span>
+          <h2 class="section-title">100% Student-Owned Google Drive Storage</h2>
+          <p class="section-subtitle">No developer databases. No monthly recording minute caps. Complete student ownership.</p>
+        </div>
+
+        <div class="architecture-grid">
+          <!-- VoiceBridge Architecture -->
+          <div class="arch-card highlight">
+            <span class="arch-badge">VoiceBridge Architecture</span>
+            <h3 class="arch-title" style="color: var(--brand-accent);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Direct Student Google Drive
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              When a student records, the audio is uploaded directly from their browser into their school Google Drive account under the <code>VoiceBridge Recordings</code> folder.
+            </p>
+            <ul class="arch-list">
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>$0.00 Developer Operating Bill:</strong> Audio never touches developer cloud infrastructure.</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Unlimited Minutes:</strong> No 3-minute recording caps or paid tier paywalls.</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Least Privilege:</strong> Only accesses files created by VoiceBridge (<code>drive.file</code> scope).</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>District Retention:</strong> Files respect district Google Workspace archive & deletion rules.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Legacy SaaS Architecture -->
+          <div class="arch-card">
+            <h3 class="arch-title" style="color: var(--text-muted);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              Traditional Commercial Audio Vendors
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              Commercial recording platforms send student voice data to centralized corporate AWS/GCP servers.
+            </p>
+            <ul class="arch-list">
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Expensive recurring subscription licenses charged per student.</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Student voice recordings stored in centralized third-party databases.</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Arbitrary recording limits and restrictive monthly audio caps.</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Data transfer and privacy risks with external commercial entities.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy & Security Compliance Section -->
+    <section class="privacy-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="badge">Student Privacy First</span>
+          <h2 class="section-title">Strict Legal & Ethical Compliance</h2>
+          <p class="section-subtitle">VoiceBridge adheres to the highest standards of K-12 data privacy and digital safety.</p>
+        </div>
+
+        <div class="compliance-grid">
+          <div class="compliance-card">
+            <div class="compliance-icon">🛡️</div>
+            <h3>FERPA & COPPA</h3>
+            <p>Audio records remain under the strict custody and control of the school district. Zero collection of personal info for commercial monetization.</p>
+          </div>
+
+          <div class="compliance-card">
+            <div class="compliance-icon">🚫</div>
+            <h3>Zero AI Training</h3>
+            <p>Student voices, audio clips, and transcripts are <strong>NEVER</strong> used to train, fine-tune, or benchmark commercial AI speech models.</p>
+          </div>
+
+          <div class="compliance-card">
+            <div class="compliance-icon">🔒</div>
+            <h3>No Account Needed</h3>
+            <p>No new usernames, passwords, or registration forms. Authentication is powered natively via Google Workspace Single Sign-On (SSO).</p>
+          </div>
+
+          <div class="compliance-card">
+            <div class="compliance-icon">📜</div>
+            <h3>Transparent Policy</h3>
+            <p>Read our full open-access privacy disclosure written in clear, plain language with zero legal obfuscation.</p>
+            <a href="privacy-policy.html" style="font-weight: 600; margin-top: 10px; display: inline-block;">View Privacy Policy $ightarrow$</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- District Deployment Section -->
+    <section id="deployment" class="deployment-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="badge">District IT Management</span>
+          <h2 class="section-title">1-Click Google Workspace Force Deployment</h2>
+          <p class="section-subtitle">Deploy VoiceBridge to thousands of student Chromebooks across your entire district in under 5 minutes.</p>
+        </div>
+
+        <div class="deployment-steps">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>Open Admin Console</h3>
+            <p>Sign into <strong>admin.google.com</strong> as a Super Admin and navigate to <code>Devices $ightarrow$ Chrome $ightarrow$ Apps & extensions</code>.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <h3>Select Student OU</h3>
+            <p>Select your target Organizational Unit (e.g. <code>All Students</code> or <code>Special Education / IEP</code>).</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>Force Install Extension</h3>
+            <p>Click the <strong>+</strong> icon, select <strong>Add Chrome app or extension by ID</strong>, and set Installation policy to <strong>Force install</strong>.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">4</div>
+            <h3>Pre-Grant Microphone</h3>
+            <p>Under Chrome Device Settings, add <code>https://classroom.google.com</code> to allowed audio capture URLs so students are never prompted with dialogs.</p>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+          <a href="install.html" class="btn btn-primary btn-lg">View Full Step-by-Step District Installation Guide $ightarrow$</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="badge">Frequently Asked Questions</span>
+          <h2 class="section-title">Common Questions from Educators & Parents</h2>
+        </div>
+
+        <div class="faq-list">
+          <div class="faq-item">
+            <button class="faq-question">
+              <span>Is VoiceBridge completely free for schools and teachers?</span>
+              <span class="faq-icon">▾</span>
+            </button>
+            <div class="faq-answer">
+              Yes, VoiceBridge is 100% free and open-source. Because audio recordings are stored directly in the student's own Google Drive storage, there are zero server costs for developers or school districts.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span>Can other students hear my child's voice recordings?</span>
+              <span class="faq-icon">▾</span>
+            </button>
+            <div class="faq-answer">
+              No. VoiceBridge is engineered specifically to inject into 1-on-1 Google Classroom Private Comments between the student and the teacher. It explicitly excludes public class stream comments to protect student privacy and remove social anxiety.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span>What Google Drive permissions does VoiceBridge request?</span>
+              <span class="faq-icon">▾</span>
+            </button>
+            <div class="faq-answer">
+              VoiceBridge uses the least-privilege <code>drive.file</code> OAuth scope. This means VoiceBridge can only access files and folders that it creates itself. It cannot read, browse, modify, or delete any other files or student documents in Google Drive.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span>Does VoiceBridge support students with IEPs and 504 plans?</span>
+              <span class="faq-icon">▾</span>
+            </button>
+            <div class="faq-answer">
+              Yes! VoiceBridge was built specifically to fulfill oral response accommodations for students with dysgraphia, speech-to-text fatigue, and motor challenges. It features single-key switch controls (Space/Esc), Lexend and OpenDyslexic fonts, and WCAG AAA 7:1 contrast.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <img src="assets/images/icon-128.png" alt="VoiceBridge Logo">
+            <span>VoiceBridge</span>
+          </div>
+          <p>
+            Accessible voice recording and asynchronous audio feedback designed for Universal Design for Learning (UDL) & K-12 Special Education.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#simulator">Live Simulator</a></li>
+            <li><a href="#accessibility">Accessibility</a></li>
+            <li><a href="#architecture">Architecture</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Documentation</h4>
+          <ul class="footer-links">
+            <li><a href="install.html">Installation Guide</a></li>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="https://github.com/andrewgitnersolutions/voicebridge" target="_blank" rel="noopener">GitHub Repository</a></li>
+            <li><a href="https://chrome.google.com/webstore" target="_blank" rel="noopener">Chrome Web Store</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Compliance</h4>
+          <ul class="footer-links">
+            <li><span style="color: var(--text-secondary);">FERPA & COPPA</span></li>
+            <li><span style="color: var(--text-secondary);">GDPR Compliant</span></li>
+            <li><span style="color: var(--text-secondary);">WCAG AAA 7:1</span></li>
+            <li><span style="color: var(--text-secondary);">Zero AI Training</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 VoiceBridge Project. Open Source & Student Privacy First.</div>
+        <div>Built for Inclusive K-12 Classrooms Worldwide.</div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/simulator.js"></script>
+  <script src="assets/js/player-demo.js"></script>
+</body>
+</html>

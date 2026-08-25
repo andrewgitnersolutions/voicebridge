@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceBridge — Classroom & Docs Testing Simulation</title>
+  <link rel="stylesheet" href="content/content.css">
+  <style>
+    body {
+      font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 40px 20px;
+      color: #1e293b;
+    }
+    .test-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    .header-banner {
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .assignment-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .comments-section {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+    .comment-box {
+      margin-bottom: 16px;
+    }
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 80px;
+    }
+    .badge-private {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-public {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .test-instructions {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 24px;
+    }
+    .test-instructions ol {
+      margin: 8px 0 0 20px;
+      padding: 0;
+    }
+    .test-instructions li {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="test-container">
+  <div class="header-banner">
+    <h1>🎙️ VoiceBridge Classroom Test Fixture</h1>
+    <p style="color: #64748b; margin: 4px 0 0 0;">Interactive test page for validating Google Classroom comments injection, audio playback, and UDL themes.</p>
+  </div>
+
+  <div class="test-instructions">
+    <strong>📋 Quick Testing Checklist:</strong>
+    <ol>
+      <li><strong>Floating Action Button:</strong> Look at the bottom right of the screen for the blue <em>"Record Voice"</em> pill button. Click it to open the recording modal.</li>
+      <li><strong>Private Comments Test:</strong> Check that the microphone trigger icon appears next to the <em>Private Comment</em> area below, and NOT the public class comment.</li>
+      <li><strong>Audio Player Test:</strong> Verify that the simulated existing voice note below renders an inline player with play/pause, progress scrubber, and speed controls.</li>
+      <li><strong>Keyboard Accessibility:</strong> Press <kbd>Esc</kbd> to close any active modal, or <kbd>Space</kbd> to stop an in-progress recording.</li>
+    </ol>
+  </div>
+
+  <div class="assignment-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h2 style="margin: 0; font-size: 18px;">Assignment 3: Science Reflection & Explanation</h2>
+      <span style="color: #64748b; font-size: 13px;">Due: Tomorrow, 11:59 PM</span>
+    </div>
+    <p style="color: #334155; font-size: 14px; line-height: 1.5;">
+      Explain in your own words the difference between potential energy and kinetic energy. You may type your answer or submit a <strong>VoiceBridge voice note</strong> directly in your private comments.
+    </p>
+
+    <!-- Simulated Existing Teacher Voice Feedback Card -->
+    <div class="comments-section">
+      <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 12px;">Previous Comment Thread</h3>
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+        <strong style="font-size: 13px; color: #1e293b;">Mrs. Johnson (Teacher)</strong>
+        <p style="font-size: 13px; margin: 4px 0 8px 0; color: #475569;">Great start! Here is verbal feedback on your previous draft:</p>
+        <div>
+          🎙️ VoiceBridge Note (0:35) • Listen: <a href="https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I0J/view" target="_blank">https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I0J/view</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Private Comments Area (Should have injected mic button) -->
+    <div class="comments-section">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <span class="badge-private">Private Comments (1-on-1 with Teacher)</span>
+      </div>
+      <div class="comment-box" aria-label="Add private comment" data-is-private="true">
+        <textarea id="private-comment-input" placeholder="Add private comment (click 🎙️ to record voice response)..."></textarea>
+      </div>
+    </div>
+
+    <!-- Public Class Comments Area (Should NEVER have injected mic button) -->
+    <div class="comments-section">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <span class="badge-public">Class comments (Public Stream — VoiceBridge Excluded)</span>
+      </div>
+      <div class="comment-box" aria-label="Add class comment">
+        <textarea placeholder="Add public class comment..."></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Embedded VoiceBridge Simulation Harness & Content Scripts -->
+<script>
+// Standalone Simulation Environment Mock for direct browser execution
+if (typeof window.chrome === 'undefined' || !window.chrome.runtime || !window.chrome.runtime.sendMessage) {
+  const messageListeners = [];
+  let simulationLevelInterval = null;
+
+  window.chrome = window.chrome || {};
+  window.chrome.runtime = {
+    sendMessage: function(msg, callback) {
+      if (msg.action === 'GET_USER_SETTINGS') {
+        const res = {
+          fontFamily: 'lexend',
+          theme: 'default',
+          singleKeyShortcuts: true,
+          silenceWarning: true,
+          autoStartRecording: false,
+          selectedAudioDeviceId: 'default',
+          selectedAudioDeviceLabel: 'Default Microphone'
+        };
+        setTimeout(() => callback && callback(res), 10);
+      } else if (msg.action === 'START_RECORDING') {
+        if (simulationLevelInterval) clearInterval(simulationLevelInterval);
+        simulationLevelInterval = setInterval(() => {
+          const fakeLevel = 0.2 + Math.random() * 0.6;
+          messageListeners.forEach(l => l({ action: 'AUDIO_LEVEL_UPDATE', level: fakeLevel }, {}, () => {}));
+        }, 90);
+        setTimeout(() => callback && callback({ success: true }), 40);
+      } else if (msg.action === 'STOP_RECORDING') {
+        if (simulationLevelInterval) { clearInterval(simulationLevelInterval); simulationLevelInterval = null; }
+        const mockBase64Audio = 'data:audio/webm;codecs=opus;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwH/////////FUmpZ+tM17qCHR87GQAAAAAAAFlSu2u4tsjrO32+uGj37qST0ZOS36GVRc0=';
+        setTimeout(() => callback && callback({
+          success: true,
+          audioBase64: mockBase64Audio,
+          durationSeconds: 5
+        }), 60);
+      } else if (msg.action === 'CANCEL_RECORDING') {
+        if (simulationLevelInterval) { clearInterval(simulationLevelInterval); simulationLevelInterval = null; }
+        setTimeout(() => callback && callback({ success: true }), 10);
+      } else if (msg.action === 'UPLOAD_TO_DRIVE') {
+        const fileId = '1SimulatedDriveId_' + Math.random().toString(36).substring(2, 9);
+        const link = 'https://drive.google.com/file/d/' + fileId + '/view';
+        const timeStr = '0:05';
+        setTimeout(() => callback && callback({
+          success: true,
+          data: {
+            fileId: fileId,
+            webViewLink: link,
+            isDemoMode: true,
+            formattedChipText: '🎙️ VoiceBridge Note (' + timeStr + ') • Listen: ' + link
+          }
+        }), 80);
+      } else {
+        setTimeout(() => callback && callback({ success: true }), 10);
+      }
+    },
+    onMessage: {
+      addListener: function(fn) {
+        messageListeners.push(fn);
+      },
+      removeListener: function(fn) {
+        const idx = messageListeners.indexOf(fn);
+        if (idx !== -1) messageListeners.splice(idx, 1);
+      }
+    },
+    getURL: function(path) {
+      return path;
+    }
+  };
+
+  window.chrome.storage = {
+    local: {
+      get: function(keys, cb) {
+        const res = {
+          fontFamily: 'lexend',
+          theme: 'default',
+          singleKeyShortcuts: true,
+          silenceWarning: true,
+          autoStartRecording: false,
+          selectedAudioDeviceId: 'default',
+          selectedAudioDeviceLabel: 'Default Microphone'
+        };
+        if (cb) cb(res);
+        return Promise.resolve(res);
+      },
+      set: function(items, cb) {
+        if (cb) cb();
+        return Promise.resolve();
+      }
+    },
+    onChanged: {
+      addListener: function() {}
+    }
+  };
+}
+</script>
+<script src="content/player.js"></script>
+<script src="content/content.js"></script>
+</body>
+</html>

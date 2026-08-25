@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-font="lexend">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Data Privacy Policy — VoiceBridge</title>
+  <meta name="description" content="VoiceBridge Student Data Privacy Policy. Compliance with FERPA, COPPA, GDPR, and California SOPIPA. Zero developer database and zero AI training.">
+  <link rel="icon" type="image/png" href="assets/images/icon-48.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    .policy-content {
+      padding: 60px 0 100px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .policy-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--border-subtle);
+    }
+    .policy-section {
+      margin-bottom: 40px;
+    }
+    .policy-section h2 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+    .policy-section p, .policy-section li {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 14px;
+    }
+    .policy-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Universal Design for Learning (UDL) Accessibility Toolbar -->
+  <aside class="a11y-bar" aria-label="Accessibility & Display Controls">
+    <div class="container a11y-bar-content">
+      <div class="a11y-label">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+        <span>UDL Accessibility Bar:</span>
+      </div>
+
+      <div class="a11y-controls">
+        <div class="a11y-group">
+          <span class="a11y-group-title">Font:</span>
+          <button class="a11y-btn active" data-set-font="lexend">Lexend</button>
+          <button class="a11y-btn" data-set-font="opendyslexic">OpenDyslexic</button>
+          <button class="a11y-btn" data-set-font="system">Standard</button>
+        </div>
+
+        <div class="a11y-group">
+          <span class="a11y-group-title">Theme:</span>
+          <button class="a11y-btn active" data-set-theme="light">Light</button>
+          <button class="a11y-btn" data-set-theme="high-contrast">High Contrast</button>
+          <button class="a11y-btn" data-set-theme="pastel">Pastel</button>
+          <button class="a11y-btn" data-set-theme="dark">Dark</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo" aria-label="VoiceBridge Home">
+        <img src="assets/images/icon-128.png" alt="VoiceBridge Logo">
+        <span>VoiceBridge</span>
+        <span class="brand-badge">Privacy Hub</span>
+      </a>
+
+      <div class="nav-actions">
+        <a href="index.html" class="btn btn-secondary btn-sm">← Back to Overview</a>
+        <a href="https://chrome.google.com/webstore" class="btn btn-primary btn-sm" target="_blank" rel="noopener">Add to Chrome</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container policy-content">
+    <div class="policy-header">
+      <span class="badge" style="margin-bottom: 12px;">Student Data Privacy</span>
+      <h1 style="font-size: 2.75rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">VoiceBridge Student Privacy Policy</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Effective Date: August 25, 2026 • Last Reviewed: August 2026</p>
+    </div>
+
+    <div class="policy-section">
+      <p>
+        At <strong>VoiceBridge</strong>, we believe student privacy, emotional safety, and data security are foundational human rights. This Privacy Policy details our strict adherence to student privacy regulations and explains how VoiceBridge processes data for K-12 students, educators, and school districts.
+      </p>
+    </div>
+
+    <div class="policy-section">
+      <h2>1. Compliance with Student Privacy Regulations</h2>
+      <p>VoiceBridge is designed from the ground up to comply with all major federal, state, and international student data privacy laws:</p>
+      <ul>
+        <li><strong>FERPA (Family Educational Rights and Privacy Act):</strong> VoiceBridge recognizes student voice recordings as protected educational records. Audio files remain under the direct custody and control of the educational agency (the school district) inside the student’s Google Workspace tenant.</li>
+        <li><strong>COPPA (Children’s Online Privacy Protection Act):</strong> VoiceBridge does not knowingly collect personal information directly from children under 13 for commercial purposes. Use is authorized under school district consent for educational instructional purposes.</li>
+        <li><strong>GDPR (General Data Protection Regulation):</strong> VoiceBridge adheres to strict data minimization, purpose limitation, and storage limitation principles.</li>
+        <li><strong>State Student Privacy Acts (e.g., California SOPIPA, New York Ed Law 2-d):</strong> No student profiling, no targeted advertising, and zero monetization of student data.</li>
+      </ul>
+    </div>
+
+    <div class="policy-section">
+      <h2>2. Zero-Developer-Database Architecture ($0 Developer Server Footprint)</h2>
+      <div class="policy-card">
+        <h3 style="margin-bottom: 10px; color: var(--brand-accent);">Client-Side Direct Upload Architecture</h3>
+        <p>VoiceBridge operates on a decentralized, serverless client architecture:</p>
+        <ul>
+          <li><strong>No External Audio Servers:</strong> Student voice recordings are <strong>never sent to or stored on developer-owned servers or third-party cloud databases</strong>.</li>
+          <li><strong>Direct Student Ownership:</strong> When a student records audio, the file is uploaded <strong>directly from the student’s browser to their own district Google Drive account</strong> into a folder named <code>VoiceBridge Recordings</code>.</li>
+          <li><strong>No Account Creation:</strong> Students and teachers do not create a separate VoiceBridge account, username, or password. Authentication is handled natively via Google Workspace Single Sign-On (SSO).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="policy-section">
+      <h2>3. Google Permissions & Least-Privilege Scopes</h2>
+      <p>VoiceBridge requests the absolute minimum permissions required to function:</p>
+      <ul>
+        <li><strong>Google Drive API Scope (<code>https://www.googleapis.com/auth/drive.file</code>):</strong>
+          <br><em>What this means:</em> VoiceBridge is granted permission <strong>only to access and create files that VoiceBridge itself created</strong>.
+          <br><em>What VoiceBridge CANNOT do:</em> VoiceBridge <strong>cannot read, list, view, modify, or delete any other files, folders, or documents</strong> in the student’s Google Drive.
+        </li>
+        <li><strong>Microphone Access:</strong> Used solely in real-time to capture audio input during active recording sessions. Audio streams are discarded immediately upon file generation.</li>
+      </ul>
+    </div>
+
+    <div class="policy-section">
+      <h2>4. Absolute Prohibitions: No AI Training, No Advertising</h2>
+      <ul>
+        <li><strong>Zero AI Training:</strong> Student voice recordings, transcripts, or audio samples are <strong>NEVER used to train, fine-tune, or benchmark commercial AI models or speech recognizers</strong>.</li>
+        <li><strong>Zero Behavioral Advertising:</strong> VoiceBridge contains no advertisements, no tracking cookies, and no third-party marketing pixels.</li>
+        <li><strong>Zero Data Selling:</strong> VoiceBridge does not sell, lease, or trade student data under any circumstance.</li>
+      </ul>
+    </div>
+
+    <div class="policy-section">
+      <h2>5. Data Retention & Deletion</h2>
+      <p>Because all recordings reside in the student's own Google Drive account:</p>
+      <ul>
+        <li>The school district, student, or parent may delete recordings at any time directly through Google Drive.</li>
+        <li>Recordings are subject to the district’s native Google Workspace data retention and archival policies.</li>
+      </ul>
+    </div>
+
+    <div class="policy-section">
+      <h2>6. District Inquiries & Contact Information</h2>
+      <p>For questions regarding student data privacy, district Data Protection Agreements (DPAs), or accessibility compliance:</p>
+      <div class="policy-card">
+        <p><strong>Email:</strong> privacy@voicebridge.app</p>
+        <p><strong>Developer Website:</strong> <a href="https://voicebridge.app">https://voicebridge.app</a></p>
+        <p><strong>GitHub Repository:</strong> <a href="https://github.com/andrewgitnersolutions/voicebridge" target="_blank" rel="noopener">https://github.com/andrewgitnersolutions/voicebridge</a></p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-bottom">
+      <div>© 2026 VoiceBridge Project. Open Source & Student Privacy First.</div>
+      <div><a href="index.html">← Back to Overview</a></div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
