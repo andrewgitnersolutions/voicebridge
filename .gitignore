@@ -22,3 +22,6 @@ venv/
 # IDE
 .vscode/
 .idea/
+
+# Local GitHub workflows (not deployed via OAuth token without workflow scope)
+.github/
