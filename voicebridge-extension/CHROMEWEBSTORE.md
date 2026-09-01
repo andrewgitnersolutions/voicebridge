@@ -132,4 +132,5 @@ https://andrewgitnersolutions.github.io/voicebridge/privacy-policy.html (See `PR
 
 | Version | Date | Changes | Status |
 | :--- | :--- | :--- | :--- |
-| 1.0.0 | 2026-08-25 | Initial production release with UDL accessibility, Google Classroom Private Comments injection, and Student Drive direct upload pipeline. | Draft / Ready for Submission |
+| 1.1.0 | 2026-08-27 | Added Google Forms Read-Aloud feature: browser-native TTS with karaoke-style word highlighting for all Google Forms questions, descriptions, and answer options. | Ready for Submission |
+| 1.0.0 | 2026-08-25 | Initial production release with UDL accessibility, Google Classroom Private Comments injection, and Student Drive direct upload pipeline. | Published |

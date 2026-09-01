@@ -27,14 +27,15 @@
   }
 
   function createInlinePlayer(fileId, originalLink, rawText) {
-    const streamUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+    // Sanitize file ID (only safe alphanumeric, underscore, hyphen)
+    const safeFileId = String(fileId || '').replace(/[^a-zA-Z0-9_-]/g, '');
 
     const playerContainer = document.createElement('div');
     playerContainer.className = 'voicebridge-inline-player';
     playerContainer.setAttribute('role', 'region');
     playerContainer.setAttribute('aria-label', 'VoiceBridge Audio Player');
 
-    // Extract title/duration if present
+    // Extract title/duration safely
     let title = '🎙️ VoiceBridge Note';
     if (rawText && rawText.includes('VoiceBridge Note')) {
       const match = rawText.match(/VoiceBridge Note\s*\(([^)]+)\)/);
@@ -43,42 +44,117 @@
       }
     }
 
-    playerContainer.innerHTML = `
-      <div class="vb-player-header">
-        <span>${title}</span>
-        <a href="${originalLink}" target="_blank" rel="noopener noreferrer" style="color: #64748b; text-decoration: none; font-size: 11px;">Open in Drive ↗</a>
+    // Build header using safe textContent (H-2)
+    const header = document.createElement('div');
+    header.className = 'vb-player-header';
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'vb-player-title';
+    titleSpan.textContent = title;
+    header.appendChild(titleSpan);
+
+    const driveLink = document.createElement('a');
+    try {
+      const parsedUrl = new URL(originalLink, window.location.href);
+      if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
+        driveLink.href = parsedUrl.href;
+      } else {
+        driveLink.href = `https://drive.google.com/file/d/${safeFileId}/view`;
+      }
+    } catch (e) {
+      driveLink.href = `https://drive.google.com/file/d/${safeFileId}/view`;
+    }
+    driveLink.target = '_blank';
+    driveLink.rel = 'noopener noreferrer';
+    driveLink.style.cssText = 'color: #64748b; text-decoration: none; font-size: 11px;';
+    driveLink.textContent = 'Open in Drive ↗';
+    header.appendChild(driveLink);
+
+    // Build controls safely
+    const controls = document.createElement('div');
+    controls.className = 'vb-player-controls';
+    controls.innerHTML = `
+      <button class="vb-play-btn" aria-label="Play audio">▶</button>
+      <div class="vb-scrubber-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="vb-scrubber-progress"></div>
       </div>
-      <div class="vb-player-controls">
-        <button class="vb-play-btn" aria-label="Play audio">▶</button>
-        <div class="vb-scrubber-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <div class="vb-scrubber-progress"></div>
-        </div>
-        <span class="vb-time-display" style="font-size: 12px; font-weight: 600; color: #475569; min-width: 40px;">0:00</span>
-        <button class="vb-speed-btn" title="Playback Speed">1.0x</button>
-      </div>
-      <audio preload="none" src="${streamUrl}" style="display: none;"></audio>
+      <span class="vb-time-display" style="font-size: 12px; font-weight: 600; color: #475569; min-width: 40px;">0:00</span>
+      <button class="vb-speed-btn" title="Playback Speed">1.0x</button>
     `;
 
-    const audio = playerContainer.querySelector('audio');
-    const playBtn = playerContainer.querySelector('.vb-play-btn');
-    const scrubberTrack = playerContainer.querySelector('.vb-scrubber-track');
-    const progressBar = playerContainer.querySelector('.vb-scrubber-progress');
-    const timeDisplay = playerContainer.querySelector('.vb-time-display');
-    const speedBtn = playerContainer.querySelector('.vb-speed-btn');
+    // Audio element: do not expose Drive download URL in initial DOM (H-3)
+    const audio = document.createElement('audio');
+    audio.preload = 'none';
+    audio.style.display = 'none';
+
+    playerContainer.appendChild(header);
+    playerContainer.appendChild(controls);
+    playerContainer.appendChild(audio);
+
+    const playBtn = controls.querySelector('.vb-play-btn');
+    const scrubberTrack = controls.querySelector('.vb-scrubber-track');
+    const progressBar = controls.querySelector('.vb-scrubber-progress');
+    const timeDisplay = controls.querySelector('.vb-time-display');
+    const speedBtn = controls.querySelector('.vb-speed-btn');
 
     let speeds = [1.0, 1.25, 1.5, 2.0, 0.75];
     let currentSpeedIdx = 0;
+    let audioBlobUrl = null;
+    let isFetching = false;
+
+    function ensureAudioSource() {
+      if (audio.src) return Promise.resolve();
+      if (isFetching) return Promise.reject('Fetching already in progress');
+      isFetching = true;
+
+      return new Promise((resolve) => {
+        // Try proxying audio through background worker for privacy (H-3)
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+          chrome.runtime.sendMessage({ action: 'FETCH_DRIVE_AUDIO', payload: { fileId: safeFileId } }, (res) => {
+            isFetching = false;
+            if (res && res.success && res.base64Audio) {
+              try {
+                const parts = res.base64Audio.split(',');
+                const byteCharacters = atob(parts[1] || parts[0]);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                  byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'audio/webm' });
+                audioBlobUrl = URL.createObjectURL(blob);
+                audio.src = audioBlobUrl;
+                resolve();
+                return;
+              } catch (e) {
+                console.warn('[VoiceBridge] Failed to parse proxied audio:', e);
+              }
+            }
+            // Fallback to direct stream URL
+            audio.src = `https://drive.google.com/uc?export=download&id=${safeFileId}`;
+            resolve();
+          });
+        } else {
+          isFetching = false;
+          audio.src = `https://drive.google.com/uc?export=download&id=${safeFileId}`;
+          resolve();
+        }
+      });
+    }
 
     // Play / Pause toggle
     playBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (audio.paused) {
-        audio.play().then(() => {
-          playBtn.innerHTML = '⏸';
-          playBtn.setAttribute('aria-label', 'Pause audio');
-        }).catch((err) => {
-          console.warn('[VoiceBridge] Direct audio stream blocked, opening Drive viewer:', err);
-          window.open(originalLink, '_blank');
+        ensureAudioSource().then(() => {
+          audio.play().then(() => {
+            playBtn.innerHTML = '⏸';
+            playBtn.setAttribute('aria-label', 'Pause audio');
+          }).catch((err) => {
+            console.warn('[VoiceBridge] Direct audio stream blocked, opening Drive viewer:', err);
+            window.open(driveLink.href, '_blank');
+          });
+        }).catch(() => {
+          audio.play().catch(() => window.open(driveLink.href, '_blank'));
         });
       } else {
         audio.pause();

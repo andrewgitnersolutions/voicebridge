@@ -263,7 +263,7 @@
             <div class="vb-mic-icon-large">🎙️</div>
             <div class="vb-mic-info">
               <span class="vb-mic-title">Active Microphone</span>
-              <span class="vb-mic-name">${userSettings.selectedAudioDeviceLabel || 'Default Microphone'}</span>
+              <span class="vb-mic-name"></span>
             </div>
           </div>
 
@@ -280,6 +280,9 @@
           </div>
         </div>
       `;
+
+      const micNameEl = body.querySelector('.vb-mic-name');
+      if (micNameEl) micNameEl.textContent = userSettings.selectedAudioDeviceLabel || 'Default Microphone';
 
       body.querySelector('#vb-ready-cancel-btn').addEventListener('click', closeModal);
       body.querySelector('#vb-start-record-btn').addEventListener('click', () => {
@@ -300,7 +303,7 @@
             <div class="vb-mic-icon-large">🎙️</div>
             <div class="vb-mic-info">
               <span class="vb-mic-title">Starting Audio Engine</span>
-              <span class="vb-mic-name">${userSettings.selectedAudioDeviceLabel || 'Default Microphone'}</span>
+              <span class="vb-mic-name"></span>
             </div>
           </div>
 
@@ -313,6 +316,9 @@
           </div>
         </div>
       `;
+
+      const micNameEl = body.querySelector('.vb-mic-name');
+      if (micNameEl) micNameEl.textContent = userSettings.selectedAudioDeviceLabel || 'Default Microphone';
 
       body.querySelector('#vb-starting-cancel-btn').addEventListener('click', closeModal);
     } else if (recordingState === 'RECORDING') {
@@ -330,7 +336,7 @@
         </div>
 
         <div style="font-size: 11px; color: #64748b; text-align: center; margin: -4px 0 8px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          🎙️ Mic: <strong>${userSettings.selectedAudioDeviceLabel || 'Default Microphone'}</strong>
+          🎙️ Mic: <strong class="vb-mic-name-label"></strong>
         </div>
 
         <div id="vb-silence-warning-slot"></div>
@@ -343,6 +349,9 @@
           </button>
         </div>
       `;
+
+      const micLabelEl = body.querySelector('.vb-mic-name-label');
+      if (micLabelEl) micLabelEl.textContent = userSettings.selectedAudioDeviceLabel || 'Default Microphone';
 
       body.querySelector('#vb-cancel-btn').addEventListener('click', closeModal);
       body.querySelector('#vb-stop-btn').addEventListener('click', stopRecording);
@@ -514,11 +523,7 @@
       if (res && res.success) {
         const data = res.data;
         insertLinkIntoComment(data.formattedChipText || data.webViewLink);
-        if (data.isDemoMode) {
-          showToastNotification('🎙️ Voice note created! Link inserted into comment.');
-        } else {
-          showToastNotification('🎙️ Voice note saved to Google Drive and inserted!');
-        }
+        showToastNotification('🎙️ Voice note saved to Google Drive and inserted!');
         closeModal();
       } else {
         showToastNotification('⚠️ Could not complete upload: ' + (res?.error || 'Authentication error'));

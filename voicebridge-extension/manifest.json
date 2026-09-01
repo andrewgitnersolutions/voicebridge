@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "VoiceBridge — Voice Feedback & Response for Classrooms",
   "short_name": "VoiceBridge",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Accessible voice recording for Special Education and K-12. Record oral responses in Google Classroom, Docs & Slides.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -47,6 +47,18 @@
       "js": [
         "content/player.js",
         "content/content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://docs.google.com/forms/*"
+      ],
+      "css": [
+        "content/forms-readaloud.css"
+      ],
+      "js": [
+        "content/forms-readaloud.js"
       ],
       "run_at": "document_idle"
     }

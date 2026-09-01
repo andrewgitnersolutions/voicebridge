@@ -14,6 +14,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Dev test tools (H-4)
+scripts/
+
 # IDE
 .vscode/
 .idea/

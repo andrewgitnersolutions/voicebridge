@@ -5,6 +5,7 @@
 
 # Chrome profile / testing cache
 .chrome-profile/
+.chrome-temp-profile/
 component_crx_cache/
 
 # Python

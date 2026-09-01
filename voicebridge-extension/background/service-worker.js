@@ -87,10 +87,30 @@ async function getOrCreateDriveFolder(token) {
 }
 
 // Set shareable link permission on the recording file
+// Defaults to domain sharing for FERPA compliance, falling back to anyone or restricted
 async function setDriveFilePermission(fileId, token) {
   const permUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`;
   
-  // Try "anyone with link" first
+  // Default to domain-level sharing (safe for strict school district Google Workspace policies & FERPA compliant)
+  try {
+    const domainRes = await fetch(permUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        role: 'reader',
+        type: 'domain'
+      })
+    });
+
+    if (domainRes.ok) return { type: 'domain' };
+  } catch (err) {
+    console.warn('[VoiceBridge] Domain sharing unavailable, falling back to link sharing:', err);
+  }
+
+  // Fallback to "anyone with link" if domain sharing is unavailable (e.g. consumer accounts)
   try {
     const res = await fetch(permUrl, {
       method: 'POST',
@@ -107,26 +127,7 @@ async function setDriveFilePermission(fileId, token) {
 
     if (res.ok) return { type: 'anyone' };
   } catch (err) {
-    console.warn('[VoiceBridge] Public sharing restricted by district policy, falling back to domain:', err);
-  }
-
-  // Fallback to domain-level sharing (safe for strict school district Google Workspace policies)
-  try {
-    const domainRes = await fetch(permUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        role: 'reader',
-        type: 'domain'
-      })
-    });
-
-    if (domainRes.ok) return { type: 'domain' };
-  } catch (err) {
-    console.error('[VoiceBridge] Failed to set domain permissions:', err);
+    console.warn('[VoiceBridge] Public sharing restricted by district policy:', err);
   }
 
   return { type: 'restricted' };
@@ -143,21 +144,14 @@ async function uploadAudioToGoogleDrive(audioBase64, durationSeconds, studentNot
 
   return new Promise((resolve) => {
     chrome.identity.getAuthToken({ interactive: true }, async (token) => {
-      // If OAuth Client ID is placeholder or unconfigured during local development, provide graceful demo fallback
+      // If OAuth token request fails, return clear error instead of silently faking success with unshareable local link
       if (chrome.runtime.lastError || !token) {
-        console.warn('[VoiceBridge] OAuth token not available, using Local Testing / Demo Mode:', chrome.runtime.lastError?.message);
-        
-        const demoFileId = `vb_demo_${Date.now()}`;
-        const demoViewLink = chrome.runtime.getURL(`player/listen.html?id=${demoFileId}`);
+        const errorMsg = chrome.runtime.lastError?.message || 'Authentication token unavailable';
+        console.error('[VoiceBridge] Google Drive OAuth error:', errorMsg);
 
-        // Save demo recording in local storage for local playback
+        // Preserve recorded audio in local storage so user does not lose their recording
         try {
           await chrome.storage.local.set({
-            [`audio_${demoFileId}`]: {
-              audioBase64: audioBase64,
-              durationSeconds: durationSeconds,
-              timestamp: timestamp
-            },
             latest_audio: {
               audioBase64: audioBase64,
               durationSeconds: durationSeconds,
@@ -167,16 +161,11 @@ async function uploadAudioToGoogleDrive(audioBase64, durationSeconds, studentNot
         } catch (e) {}
 
         return resolve({
-          success: true,
-          isDemoMode: true,
-          fileId: demoFileId,
-          fileName: `VoiceBridge_Note_${timestamp}.webm`,
-          webViewLink: demoViewLink,
-          directStreamUrl: demoViewLink,
+          success: false,
+          isDemoMode: false,
+          error: `Google Drive sign-in failed: ${errorMsg}. Please check Google account authorization.`,
           duration: formattedTime,
-          durationSeconds: durationSeconds,
-          sharing: 'local_demo',
-          formattedChipText: `🎙️ VoiceBridge Note (${formattedTime}) • Listen: ${demoViewLink}`
+          durationSeconds: durationSeconds
         });
       }
 
@@ -223,7 +212,7 @@ async function uploadAudioToGoogleDrive(audioBase64, durationSeconds, studentNot
 
         const uploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,webContentLink,size';
 
-        const uploadRes = await fetch(uploadUrl, {
+        let uploadRes = await fetch(uploadUrl, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -231,6 +220,26 @@ async function uploadAudioToGoogleDrive(audioBase64, durationSeconds, studentNot
           },
           body: combinedBody
         });
+
+        // If 401 Unauthorized, token may be expired; remove cached token and retry once (M-4)
+        if (uploadRes.status === 401 && token) {
+          console.warn('[VoiceBridge] OAuth token expired (401), invalidating cache and retrying...');
+          await new Promise((res) => chrome.identity.removeCachedAuthToken({ token }, res));
+          const refreshedToken = await new Promise((res) => {
+            chrome.identity.getAuthToken({ interactive: false }, (t) => res(t || null));
+          });
+          if (refreshedToken) {
+            token = refreshedToken;
+            uploadRes = await fetch(uploadUrl, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': `multipart/related; boundary=${boundary}`
+              },
+              body: combinedBody
+            });
+          }
+        }
 
         if (!uploadRes.ok) {
           const errText = await uploadRes.text();
@@ -240,11 +249,16 @@ async function uploadAudioToGoogleDrive(audioBase64, durationSeconds, studentNot
         const fileData = await uploadRes.json();
         const fileId = fileData.id;
 
-        // Set permission so teacher can view/stream
+        // Set permission so teacher can view/stream (domain first for FERPA compliance)
         const permResult = await setDriveFilePermission(fileId, token);
 
         const directStreamUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
         const viewLink = fileData.webViewLink || `https://drive.google.com/file/d/${fileId}/view`;
+
+        // Clean up temporary audio storage upon successful Drive upload (M-5)
+        try {
+          await chrome.storage.local.remove(['latest_audio']);
+        } catch (e) {}
 
         resolve({
           success: true,
@@ -261,28 +275,81 @@ async function uploadAudioToGoogleDrive(audioBase64, durationSeconds, studentNot
 
       } catch (err) {
         console.error('[VoiceBridge] Drive upload error:', err);
-        // Fallback to local link if network/API fails
+        // Do NOT return success: true with a fake Google Drive link (M-1)
+        // Return clear failure with local player link so user knows upload failed and audio is preserved
         const demoFileId = `vb_fallback_${Date.now()}`;
-        const demoViewLink = `https://drive.google.com/file/d/${demoFileId}/view`;
+        const localListenUrl = chrome.runtime.getURL(`player/listen.html?id=${demoFileId}`);
+
+        // Save demo recording in local storage for offline recovery
+        try {
+          await chrome.storage.local.set({
+            [`audio_${demoFileId}`]: {
+              audioBase64: audioBase64,
+              durationSeconds: durationSeconds,
+              timestamp: timestamp
+            },
+            latest_audio: {
+              audioBase64: audioBase64,
+              durationSeconds: durationSeconds,
+              timestamp: timestamp
+            }
+          });
+        } catch (e) {}
+
         resolve({
-          success: true,
+          success: false,
           isDemoMode: true,
+          error: `Upload to Google Drive failed: ${err.message || 'Network error'}. Audio saved locally.`,
           fileId: demoFileId,
           fileName: `VoiceBridge_Note_${timestamp}.webm`,
-          webViewLink: demoViewLink,
-          directStreamUrl: demoViewLink,
+          webViewLink: localListenUrl,
+          directStreamUrl: localListenUrl,
           duration: formattedTime,
           durationSeconds: durationSeconds,
           sharing: 'offline_fallback',
-          formattedChipText: `🎙️ VoiceBridge Note (${formattedTime}) • Listen: ${demoViewLink}`
+          formattedChipText: `🎙️ VoiceBridge Note (${formattedTime}) [Local Backup] • Listen: ${localListenUrl}`
         });
       }
     });
   });
 }
 
+// State tracking to prevent unauthorized/arbitrary uploads (M-2, M-3)
+let activeRecordingSession = false;
+
+// Periodic cleanup of expired demo recordings older than 24h (M-5)
+async function cleanupExpiredRecordings() {
+  try {
+    const all = await chrome.storage.local.get(null);
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const expiredKeys = [];
+    for (const [k, v] of Object.entries(all)) {
+      if (k.startsWith('audio_vb_')) {
+        const ts = typeof v?.timestamp === 'number' ? v.timestamp : (v?.timestamp ? new Date(v.timestamp).getTime() : 0);
+        if (ts && (now - ts > ONE_DAY_MS)) {
+          expiredKeys.push(k);
+        }
+      }
+    }
+    if (expiredKeys.length > 0) {
+      await chrome.storage.local.remove(expiredKeys);
+      console.log(`[VoiceBridge] Cleaned up ${expiredKeys.length} expired demo audio recordings`);
+    }
+  } catch (e) {}
+}
+
+cleanupExpiredRecordings();
+
 // Runtime message dispatcher
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // Validate sender: ensure message originated from this extension (M-2)
+  if (sender && sender.id !== chrome.runtime.id) {
+    console.warn('[VoiceBridge] Blocked message from unauthorized sender:', sender?.id);
+    sendResponse({ success: false, error: 'Unauthorized sender' });
+    return false;
+  }
+
   const { action, payload } = message;
 
   if (action === 'OPEN_PERMISSION_PAGE') {
@@ -292,6 +359,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (action === 'START_RECORDING') {
+    activeRecordingSession = true;
     (async () => {
       try {
         await ensureOffscreenDocument();
@@ -341,6 +409,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (action === 'CANCEL_RECORDING') {
+    activeRecordingSession = false;
     (async () => {
       try {
         chrome.runtime.sendMessage({ action: 'OFFSCREEN_CANCEL_RECORDING' }, () => {
@@ -358,6 +427,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (action === 'UPLOAD_TO_DRIVE') {
+    // Only accept upload if a recording session was active (or sent from extension popup without tab) (M-3)
+    if (sender.tab && !activeRecordingSession) {
+      console.warn('[VoiceBridge] Blocked unauthorized UPLOAD_TO_DRIVE without preceding recording session');
+      sendResponse({ success: false, error: 'No active recording session' });
+      return false;
+    }
+
     (async () => {
       try {
         const result = await uploadAudioToGoogleDrive(
@@ -366,9 +442,53 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           payload.note || ''
         );
         await closeOffscreenDocument();
-        sendResponse({ success: true, data: result });
+        if (result.success) {
+          activeRecordingSession = false;
+        }
+        sendResponse({ success: result.success, data: result, error: result.error });
       } catch (err) {
         console.error('[VoiceBridge] Upload failed:', err);
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true;
+  }
+
+  if (action === 'FETCH_DRIVE_AUDIO') {
+    (async () => {
+      try {
+        const fileId = payload?.fileId;
+        if (!fileId || typeof fileId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(fileId)) {
+          sendResponse({ success: false, error: 'Invalid file ID' });
+          return;
+        }
+        chrome.identity.getAuthToken({ interactive: false }, async (token) => {
+          if (chrome.runtime.lastError || !token) {
+            sendResponse({ success: false, error: 'Not authenticated' });
+            return;
+          }
+          try {
+            const streamRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!streamRes.ok) {
+              sendResponse({ success: false, error: `Drive fetch failed: ${streamRes.status}` });
+              return;
+            }
+            const arrayBuf = await streamRes.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuf);
+            let binary = '';
+            const chunkSize = 8192;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+              binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+            }
+            const base64 = btoa(binary);
+            sendResponse({ success: true, base64Audio: `data:audio/webm;base64,${base64}` });
+          } catch (e) {
+            sendResponse({ success: false, error: e.message });
+          }
+        });
+      } catch (err) {
         sendResponse({ success: false, error: err.message });
       }
     })();

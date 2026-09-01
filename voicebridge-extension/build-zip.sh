@@ -6,7 +6,7 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="${ROOT_DIR}/dist"
-ZIP_NAME="voicebridge-v1.0.0.zip"
+ZIP_NAME="voicebridge-v1.1.0.zip"
 ZIP_PATH="${DIST_DIR}/${ZIP_NAME}"
 
 echo "=========================================="

@@ -1,0 +1,210 @@
+/**
+ * VoiceBridge — Google Forms Read-Aloud Stylesheet
+ * Theme-aware karaoke word highlighting and inline speaker button styles.
+ * Inherits VoiceBridge CSS variables from content.css (--vb-primary, --vb-font-family, etc.)
+ * WCAG AAA compliant: 48px+ touch targets, focus-visible outlines, reduced-motion support.
+ */
+
+/* --- Highlight Color Token --- */
+:root {
+  --vb-highlight: #fef08a; /* Soft yellow — default theme */
+  --vb-highlight-text: #1e1b4b; /* Dark text on highlight for contrast */
+  --vb-ra-btn-size: 28px;
+  --vb-ra-btn-tap: 48px; /* WCAG AAA minimum touch target */
+}
+
+/* High Contrast: bright yellow on black */
+.vb-theme-high-contrast {
+  --vb-highlight: #facc15;
+  --vb-highlight-text: #000000;
+}
+
+/* Pastel: warm peach */
+.vb-theme-pastel {
+  --vb-highlight: #fde68a;
+  --vb-highlight-text: #1e1b4b;
+}
+
+/* ================================================================
+   READ-ALOUD BUTTON (per question block)
+   ================================================================ */
+
+.vb-ra-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  /* Visible size */
+  width: var(--vb-ra-btn-size);
+  height: var(--vb-ra-btn-size);
+  /* Touch target: 48px via padding */
+  min-width: var(--vb-ra-btn-tap);
+  min-height: var(--vb-ra-btn-tap);
+  padding: 10px;
+  box-sizing: border-box;
+  /* Appearance */
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+  /* Positioning: sits inline before the question text */
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin-right: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.vb-ra-btn:hover {
+  opacity: 1;
+  background-color: rgba(37, 99, 235, 0.08);
+  transform: scale(1.1);
+}
+
+.vb-ra-btn:active {
+  transform: scale(0.95);
+}
+
+/* Focus-visible for keyboard navigation */
+.vb-ra-btn:focus-visible {
+  outline: 3px solid var(--vb-primary, #2563eb);
+  outline-offset: 3px;
+  opacity: 1;
+}
+
+/* The extension icon inside the button */
+.vb-ra-btn-icon {
+  width: var(--vb-ra-btn-size);
+  height: var(--vb-ra-btn-size);
+  border-radius: 6px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* --- Playing State --- */
+.vb-ra-btn.vb-ra-playing {
+  opacity: 1;
+  background-color: rgba(37, 99, 235, 0.12);
+}
+
+.vb-ra-btn.vb-ra-playing .vb-ra-btn-icon {
+  animation: vb-ra-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes vb-ra-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+}
+
+/* High contrast theme overrides */
+.vb-theme-high-contrast .vb-ra-btn:hover {
+  background-color: rgba(250, 204, 21, 0.15);
+}
+
+.vb-theme-high-contrast .vb-ra-btn.vb-ra-playing {
+  background-color: rgba(250, 204, 21, 0.2);
+}
+
+.vb-theme-high-contrast .vb-ra-btn:focus-visible {
+  outline-color: #facc15;
+}
+
+/* ================================================================
+   QUESTION BLOCK WRAPPER (injected around question container)
+   ================================================================ */
+
+.vb-ra-question-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+/* ================================================================
+   KARAOKE WORD HIGHLIGHTING
+   ================================================================ */
+
+.vb-ra-word {
+  transition: background-color 0.15s ease, color 0.15s ease;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.vb-ra-word-active {
+  background-color: var(--vb-highlight);
+  color: var(--vb-highlight-text);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+/* ================================================================
+   STOP / TOOLTIP HINT (shown briefly on first interaction)
+   ================================================================ */
+
+.vb-ra-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1e293b;
+  color: #f8fafc;
+  font-family: var(--vb-font-family, 'Lexend', system-ui, sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+.vb-ra-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1e293b;
+}
+
+.vb-ra-btn:hover .vb-ra-tooltip,
+.vb-ra-btn:focus-visible .vb-ra-tooltip {
+  opacity: 1;
+}
+
+/* Hide tooltip once playing (the state is obvious) */
+.vb-ra-btn.vb-ra-playing .vb-ra-tooltip {
+  opacity: 0;
+}
+
+/* ================================================================
+   ACCESSIBILITY: REDUCED MOTION
+   ================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .vb-ra-word {
+    transition: none !important;
+  }
+  .vb-ra-btn {
+    transition: none !important;
+  }
+  .vb-ra-btn.vb-ra-playing .vb-ra-btn-icon {
+    animation: none !important;
+  }
+}
+
+/* ================================================================
+   PRINT: HIDE ALL INJECTED UI
+   ================================================================ */
+
+@media print {
+  .vb-ra-btn,
+  .vb-ra-tooltip,
+  .vb-ra-question-wrapper {
+    display: none !important;
+  }
+}

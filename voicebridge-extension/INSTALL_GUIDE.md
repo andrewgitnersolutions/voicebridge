@@ -19,12 +19,17 @@ In the top right corner of the Extensions page, switch the **Developer mode** to
 
 ### Step 4: Configure OAuth Client ID (For Google Drive Direct Uploads)
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a project named `VoiceBridge-District`.
-3. Enable the **Google Drive API**.
-4. Configure the OAuth Consent Screen (User Type: **Internal** for district domains, or **External** with verification for public).
-5. Create OAuth Credentials $\rightarrow$ **OAuth client ID** $\rightarrow$ Application Type: **Chrome extension**.
-6. Set the Extension ID to your VoiceBridge extension ID (found on `chrome://extensions/`).
-7. Paste your generated Client ID into `manifest.json` under `"oauth2.client_id"`.
+2. Create or select your Google Cloud project (e.g. `VoiceBridge-Production`).
+3. Enable the **Google Drive API** (**APIs & Services $\rightarrow$ Library $\rightarrow$ Google Drive API**).
+4. Configure the **OAuth Consent Screen**:
+   - User Type: **External** (for general public / Web Store) or **Internal** (for school district Workspace domains).
+   - Scopes: Add `https://www.googleapis.com/auth/drive.file`.
+   - Publishing status: **In production** (or add test accounts under Test Users if testing).
+5. Create OAuth Credentials $\rightarrow$ **Create Credentials $\rightarrow$ OAuth client ID**:
+   - Application Type: **Chrome extension**.
+   - Item ID: For Chrome Web Store releases, set this to your Chrome Web Store Extension ID (e.g., `jpmkccmocfahkohmnldjmadlggoeplfm`). For local testing, set it to the extension ID shown in `chrome://extensions/`.
+6. Copy the generated Client ID and paste it into `manifest.json` under `"oauth2.client_id"`.
+7. When uploaded to the Chrome Web Store, the extension will now directly authenticate with Google Drive and upload recordings straight into the user's `VoiceBridge Recordings` folder, generating shareable Google Drive links (`https://drive.google.com/file/d/.../view`).
 
 ---
 

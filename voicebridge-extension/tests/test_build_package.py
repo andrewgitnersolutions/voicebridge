@@ -6,7 +6,10 @@ EXTENSION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class TestBuildPackage(unittest.TestCase):
     def test_dist_zip_package(self):
-        zip_path = os.path.join(EXTENSION_DIR, 'dist', 'voicebridge-v1.0.0.zip')
+        import json
+        with open(os.path.join(EXTENSION_DIR, 'manifest.json'), 'r', encoding='utf-8') as f:
+            version = json.load(f).get('version', '1.1.0')
+        zip_path = os.path.join(EXTENSION_DIR, 'dist', f'voicebridge-v{version}.zip')
         self.assertTrue(os.path.exists(zip_path), f"Built package {zip_path} should exist")
 
         with zipfile.ZipFile(zip_path, 'r') as z:

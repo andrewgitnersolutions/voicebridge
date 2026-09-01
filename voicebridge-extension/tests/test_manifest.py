@@ -55,12 +55,13 @@ class TestManifest(unittest.TestCase):
     def test_content_scripts(self):
         cs_list = self.manifest.get('content_scripts', [])
         self.assertGreater(len(cs_list), 0, "At least one content script must be defined")
+        # Main content script covers Google Classroom, Docs, and Slides
+        main_matches = cs_list[0].get('matches', [])
+        self.assertTrue(any('classroom.google.com' in m for m in main_matches), "Main script must include Google Classroom")
+        self.assertTrue(any('docs.google.com' in m for m in main_matches), "Main script must include Google Docs")
+        self.assertTrue(any('slides.google.com' in m for m in main_matches), "Main script must include Google Slides")
+
         for cs in cs_list:
-            matches = cs.get('matches', [])
-            self.assertTrue(any('classroom.google.com' in m for m in matches), "Matches must include Google Classroom")
-            self.assertTrue(any('docs.google.com' in m for m in matches), "Matches must include Google Docs")
-            self.assertTrue(any('slides.google.com' in m for m in matches), "Matches must include Google Slides")
-            
             for js in cs.get('js', []):
                 self.assertTrue(os.path.exists(os.path.join(EXTENSION_DIR, js)), f"Content script JS {js} must exist")
             for css in cs.get('css', []):

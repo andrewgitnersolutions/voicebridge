@@ -98,5 +98,11 @@ class TestServiceWorker(unittest.TestCase):
         self.assertIn("selectedAudioDeviceId: settings.selectedAudioDeviceId || 'default'", self.sw_code)
         self.assertIn("selectedAudioDeviceLabel: settings.selectedAudioDeviceLabel || 'Default Microphone'", self.sw_code)
 
+    def test_oauth_error_handling(self):
+        # Ensure service worker does not return success: true with dummy demo links on OAuth error
+        self.assertIn("Google Drive sign-in failed:", self.sw_code)
+        self.assertIn("chrome.runtime.lastError?.message", self.sw_code)
+        self.assertIn("latest_audio", self.sw_code)
+
 if __name__ == '__main__':
     unittest.main()
