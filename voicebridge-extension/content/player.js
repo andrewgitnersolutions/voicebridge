@@ -17,14 +17,40 @@
 
   function isExcludedOrEditing(el) {
     if (!el) return true;
-    // Never touch inputs, textareas, active forms, or Google Docs / Slides canvas
-    return !!el.closest?.(
-      'textarea, input, [contenteditable="true"], [role="textbox"], form, ' +
-      '.docos-input-textarea, .docos-streamdocos-input, ' +
+
+    // 1. Never inject inside Google Docs link hovercards, bubbles, or smart chip popups
+    if (el.closest?.(
+      '.docs-bubble, .docs-hovercard-bubble, .docs-material-hovercard, ' +
+      '.docs-link-bubble, .docs-chip-hovercard, .docs-hovercard, ' +
+      '.docos-hovercard, [role="tooltip"], .sketchy-bubble'
+    )) {
+      return true;
+    }
+
+    // 2. Never touch active editing targets (inputs, textareas, active comment editing boxes)
+    if (
+      el.tagName === 'INPUT' ||
+      el.tagName === 'TEXTAREA' ||
+      el.isContentEditable ||
+      el.closest?.('.docos-input-textarea, .docos-streamdocos-input, textarea, input, [contenteditable="true"]')
+    ) {
+      return true;
+    }
+
+    // 3. Never touch Google Docs or Google Slides editor canvas surface
+    if (el.closest?.(
       '.kix-appview, .docs-texteventtarget-iframe, #docs-editor, .kix-page, .kix-canvas-tile-content, ' +
-      '.punch-stage, .punch-canvas, .punch-viewer-page, .punch-texteventtarget-iframe, .punch-full-window-overlay, ' +
-      '.voicebridge-inline-player, #voicebridge-modal-overlay, #voicebridge-floating-trigger'
-    );
+      '.punch-stage, .punch-canvas, .punch-viewer-page, .punch-texteventtarget-iframe, .punch-full-window-overlay'
+    )) {
+      return true;
+    }
+
+    // 4. Never inject inside VoiceBridge's own elements
+    if (el.closest?.('.voicebridge-inline-player, #voicebridge-modal-overlay, #voicebridge-floating-trigger')) {
+      return true;
+    }
+
+    return false;
   }
 
   function extractDuration(rawText) {
@@ -33,14 +59,14 @@
     return match ? match[1] : '';
   }
 
-  function createInlinePlayer(fileId, originalLink, rawText) {
+  function createInlinePlayer(fileId, originalLink, rawText, isInsideComment) {
     // Sanitize file ID (only safe alphanumeric, underscore, hyphen)
     const safeFileId = String(fileId || '').replace(/[^a-zA-Z0-9_-]/g, '');
     const durationStr = extractDuration(rawText);
 
     // Main Google Docs-style comment container
     const playerContainer = document.createElement('div');
-    playerContainer.className = 'voicebridge-inline-player vb-gdoc-comment-card';
+    playerContainer.className = 'voicebridge-inline-player vb-gdoc-comment-card' + (isInsideComment ? ' vb-inside-gdoc-comment' : '');
     playerContainer.setAttribute('role', 'region');
     playerContainer.setAttribute('aria-label', 'Voice Comment Player');
 
@@ -300,10 +326,11 @@
     element.classList.add('vb-hide-raw-text');
     element.style.display = 'none';
 
-    // Also hide adjacent text nodes that mention VoiceBridge or Drive
+    // Also hide adjacent text or sibling nodes that mention VoiceBridge or Drive
     const parent = element.parentElement;
     if (parent) {
-      parent.childNodes.forEach((node) => {
+      Array.from(parent.childNodes).forEach((node) => {
+        if (node === element || (node.classList && node.classList.contains('voicebridge-inline-player'))) return;
         if (node.nodeType === 3 /* Node.TEXT_NODE */) {
           const content = node.textContent || '';
           if (content.includes('VoiceBridge') || content.includes('🎙️') || content.includes('drive.google.com') || content.includes('Listen:')) {
@@ -312,6 +339,12 @@
             span.style.display = 'none';
             node.replaceWith(span);
             span.appendChild(node);
+          }
+        } else if (node.nodeType === 1 /* Element */) {
+          const text = node.textContent || '';
+          if (text.includes('VoiceBridge') || text.includes('🎙️') || text.includes('Listen:')) {
+            node.classList.add('vb-hide-raw-text');
+            node.style.display = 'none';
           }
         }
       });
@@ -344,8 +377,13 @@
             link.setAttribute(PROCESSED_ATTR, 'true');
             const parent = link.parentElement;
             if (parent && !parent.querySelector('.voicebridge-inline-player')) {
-              const player = createInlinePlayer(fileId, link.href, rawText);
-              // Hide raw text and insert Google Docs comment card
+              const isInsideNativeGDocComment = !!link.closest?.(
+                '.docos-docoview-view, .docos-docoview-comment, .docos-comment-view, ' +
+                '.docos-replyview, .docos-streamdocos-view, .docos-streamdocos-thread, ' +
+                '.docos-anchoredreplyview, .docos-anchored-view'
+              );
+              const player = createInlinePlayer(fileId, link.href, rawText, isInsideNativeGDocComment);
+              // Hide raw text and insert Google Docs comment player
               hideRawCommentContent(link);
               parent.appendChild(player);
             }
@@ -365,7 +403,12 @@
           if (match && match[1]) {
             container.setAttribute(PROCESSED_ATTR, 'true');
             const fileId = match[1];
-            const player = createInlinePlayer(fileId, match[0], text);
+            const isInsideNativeGDocComment = !!container.closest?.(
+              '.docos-docoview-view, .docos-docoview-comment, .docos-comment-view, ' +
+              '.docos-replyview, .docos-streamdocos-view, .docos-streamdocos-thread, ' +
+              '.docos-anchoredreplyview, .docos-anchored-view'
+            );
+            const player = createInlinePlayer(fileId, match[0], text, isInsideNativeGDocComment);
             // Hide the raw text content inside the comment container
             const bodyEl = container.querySelector('.docos-docoview-body, .docos-body, .docos-comment-content, p') || container;
             if (bodyEl && bodyEl !== container) {
@@ -385,8 +428,13 @@
     if (debounceTimeout) clearTimeout(debounceTimeout);
     debounceTimeout = setTimeout(() => {
       scanAndRenderPlayers();
-    }, 150);
+    }, 60);
   }
+
+  // Periodic scan for dynamic Google Docs comment threads
+  setInterval(() => {
+    scanAndRenderPlayers();
+  }, 500);
 
   // Run on load and observe dynamic DOM changes
   if (document.readyState === 'loading') {

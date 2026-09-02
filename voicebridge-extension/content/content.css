@@ -447,6 +447,24 @@
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
 }
 
+/* Seamless embedding directly inside native Google Docs comment cards */
+.voicebridge-inline-player.vb-inside-gdoc-comment {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px 0 2px 0 !important;
+  margin: 4px 0 !important;
+  max-width: 100% !important;
+}
+
+.voicebridge-inline-player.vb-inside-gdoc-comment:hover {
+  box-shadow: none !important;
+}
+
+.voicebridge-inline-player.vb-inside-gdoc-comment .vb-gdoc-comment-header {
+  display: none !important;
+}
+
 /* Google Docs Comment Header (Avatar, Author, Timestamp, Options Menu) */
 .vb-gdoc-comment-header,
 .vb-player-header {
