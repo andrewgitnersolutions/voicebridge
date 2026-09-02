@@ -59,5 +59,5 @@ Because all recordings reside in the student's own Google Drive account:
 For inquiries regarding student privacy, district data protection agreements (DPAs), or accessibility compliance:
 
 - **Email**: `privacy@voicebridge.app`
-- **Developer Website**: `https://voicebridge.app`
+- **Website**: `https://voicebridge-ext.web.app`
 - **GitHub Repository**: `https://github.com/andrewgitnersolutions/voicebridge`

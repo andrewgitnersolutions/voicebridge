@@ -1,0 +1,22 @@
+{
+  "hosting": {
+    "site": "voicebridge-ext",
+    "public": ".",
+    "cleanUrls": true,
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".chrome-profile/**",
+      ".chrome-temp-profile/**",
+      ".git/**",
+      ".github/**",
+      "voicebridge-extension/**",
+      "**/.*",
+      "**/node_modules/**",
+      "**/*.py",
+      "**/*.sh",
+      "**/*.md",
+      "**/*.log"
+    ]
+  }
+}

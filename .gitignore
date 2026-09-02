@@ -26,3 +26,8 @@ venv/
 
 # Local GitHub workflows (not deployed via OAuth token without workflow scope)
 .github/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log

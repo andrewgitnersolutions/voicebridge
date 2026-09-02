@@ -43,7 +43,7 @@ VoiceBridge is built strictly for K-12 student data privacy:
 SUPPORT & DISTRICT DEPLOYMENT:
 
 VoiceBridge is easily deployable across entire school districts via the Google Workspace Admin Console. For deployment guides, feature requests, or technical support, visit:
-https://github.com/andrewgitnersolutions/voicebridge
+https://voicebridge-ext.web.app/install.html (or https://github.com/andrewgitnersolutions/voicebridge)
 
 **Category** [REQUIRED]
 Accessibility
@@ -116,7 +116,7 @@ English
 ## Privacy Policy
 
 **Privacy Policy URL** [REQUIRED]
-https://andrewgitnersolutions.github.io/voicebridge/privacy-policy.html (See `PRIVACY_POLICY.md` for full text)
+https://voicebridge-ext.web.app/privacy-policy.html (See `PRIVACY_POLICY.md` for full text)
 
 ---
 
