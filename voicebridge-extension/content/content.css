@@ -419,86 +419,264 @@
   background-color: #e2e8f0;
 }
 
-/* --- Inline Audio Player Card in Google Classroom / Docs --- */
-.voicebridge-inline-player {
-  margin: 8px 0;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-left: 5px solid var(--vb-primary);
-  border-radius: 12px;
-  font-family: var(--vb-font-family);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 480px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+/* --- Hide Raw Comment Text when Replaced by Google Docs Comment Player --- */
+.vb-hide-raw-text {
+  display: none !important;
 }
 
+/* --- Google Docs-Styled Inline Voice Comment Player Card --- */
+.voicebridge-inline-player,
+.voicebridge-inline-player.vb-gdoc-comment-card {
+  margin: 8px 0;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  font-family: 'Google Sans', Roboto, var(--vb-font-family), system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 380px;
+  box-sizing: border-box;
+  color: #202124;
+  transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.voicebridge-inline-player.vb-gdoc-comment-card:hover {
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+}
+
+/* Google Docs Comment Header (Avatar, Author, Timestamp, Options Menu) */
+.vb-gdoc-comment-header,
 .vb-player-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
+  gap: 10px;
+  user-select: none;
 }
 
-.vb-player-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.vb-play-btn {
-  width: 40px;
-  height: 40px;
+.vb-gdoc-avatar {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--vb-primary);
-  color: #ffffff;
-  border: none;
+  background: #e8f0fe;
+  color: #1a73e8;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.vb-gdoc-author-meta {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.vb-gdoc-author-name,
+.vb-player-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202124;
+  line-height: 1.2;
+}
+
+.vb-gdoc-timestamp {
+  font-size: 11px;
+  color: #5f6368;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.vb-gdoc-menu-btn {
+  background: none;
+  border: none;
+  color: #5f6368;
+  font-size: 16px;
   cursor: pointer;
-  font-size: 18px;
-  transition: transform 0.1s, background 0.15s;
+  padding: 4px 8px;
+  border-radius: 50%;
+  line-height: 1;
+  transition: background 0.15s;
 }
 
+.vb-gdoc-menu-btn:hover {
+  background: #f1f3f4;
+}
+
+/* Google Docs Comment Body */
+.vb-gdoc-comment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vb-gdoc-player-controls,
+.vb-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Google Material Pill Buttons (Play and Start Over) */
+.vb-gdoc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 17px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  outline: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.vb-gdoc-play-btn,
+.vb-play-btn {
+  background: #1a73e8;
+  color: #ffffff;
+}
+
+.vb-gdoc-play-btn:hover,
 .vb-play-btn:hover {
-  background: var(--vb-primary-hover);
-  transform: scale(1.05);
+  background: #1765cc;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
+.vb-gdoc-play-btn.vb-playing {
+  background: #185abc;
+}
+
+.vb-gdoc-restart-btn {
+  background: #f1f3f4;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+}
+
+.vb-gdoc-restart-btn:hover {
+  background: #e8eaed;
+  color: #202124;
+}
+
+.vb-gdoc-btn-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Scrubber & Timeline */
+.vb-gdoc-scrubber-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vb-gdoc-time-current,
+.vb-time-display,
+.vb-gdoc-time-duration {
+  font-size: 11px;
+  font-weight: 500;
+  color: #5f6368;
+  min-width: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.vb-gdoc-scrubber-track,
 .vb-scrubber-track {
   flex: 1;
-  height: 6px;
-  background: #e2e8f0;
+  height: 4px;
+  background: #e8eaed;
   border-radius: 999px;
   position: relative;
   cursor: pointer;
+  transition: height 0.15s ease;
 }
 
+.vb-gdoc-scrubber-track:hover,
+.vb-scrubber-track:hover {
+  height: 6px;
+}
+
+.vb-gdoc-scrubber-progress,
 .vb-scrubber-progress {
   height: 100%;
-  background: var(--vb-primary);
+  background: #1a73e8;
   border-radius: 999px;
   width: 0%;
 }
 
+.vb-gdoc-speed-btn,
 .vb-speed-btn {
-  padding: 4px 8px;
-  font-size: 12px;
+  padding: 2px 6px;
+  font-size: 11px;
   font-weight: 600;
-  background: #e2e8f0;
+  background: #f1f3f4;
+  color: #5f6368;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  color: #1e293b;
+  transition: background 0.15s;
 }
 
+.vb-gdoc-speed-btn:hover,
 .vb-speed-btn:hover {
-  background: #cbd5e1;
+  background: #e8eaed;
+  color: #202124;
+}
+
+/* High contrast & UDL theme adaptations */
+.vb-theme-high-contrast .voicebridge-inline-player.vb-gdoc-comment-card {
+  background: #000000;
+  border: 2px solid #facc15;
+  color: #ffffff;
+}
+
+.vb-theme-high-contrast .vb-gdoc-avatar {
+  background: #facc15;
+  color: #000000;
+}
+
+.vb-theme-high-contrast .vb-gdoc-author-name,
+.vb-theme-high-contrast .vb-player-title {
+  color: #ffffff;
+}
+
+.vb-theme-high-contrast .vb-gdoc-timestamp,
+.vb-theme-high-contrast .vb-gdoc-time-current,
+.vb-theme-high-contrast .vb-gdoc-time-duration,
+.vb-theme-high-contrast .vb-time-display {
+  color: #fef08a;
+}
+
+.vb-theme-high-contrast .vb-gdoc-play-btn,
+.vb-theme-high-contrast .vb-play-btn {
+  background: #facc15;
+  color: #000000;
+}
+
+.vb-theme-high-contrast .vb-gdoc-restart-btn {
+  background: #1e293b;
+  color: #ffffff;
+  border-color: #facc15;
+}
+
+.vb-theme-high-contrast .vb-gdoc-scrubber-track,
+.vb-theme-high-contrast .vb-scrubber-track {
+  background: #334155;
+}
+
+.vb-theme-high-contrast .vb-gdoc-scrubber-progress,
+.vb-theme-high-contrast .vb-scrubber-progress {
+  background: #facc15;
 }
 
 /* Injected Classroom Private Comment Mic Icon */

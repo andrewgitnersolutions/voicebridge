@@ -607,6 +607,10 @@
       }
     }
 
+    if (typeof window.__voicebridgeScanAndRenderPlayers === 'function') {
+      setTimeout(() => window.__voicebridgeScanAndRenderPlayers(), 50);
+    }
+
     if (directlyInserted) {
       showToastNotification('✅ Voice note inserted into comment!');
     } else if (copiedToClipboard) {

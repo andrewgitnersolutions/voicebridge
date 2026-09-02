@@ -255,9 +255,20 @@ async function uploadAudioToGoogleDrive(audioBase64, durationSeconds, studentNot
         const directStreamUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
         const viewLink = fileData.webViewLink || `https://drive.google.com/file/d/${fileId}/view`;
 
-        // Clean up temporary audio storage upon successful Drive upload (M-5)
+        // Cache audio locally for instant in-page playback without network round-trips
         try {
-          await chrome.storage.local.remove(['latest_audio']);
+          await chrome.storage.local.set({
+            [`audio_${fileId}`]: {
+              audioBase64: audioBase64,
+              durationSeconds: durationSeconds,
+              timestamp: Date.now()
+            },
+            latest_audio: {
+              audioBase64: audioBase64,
+              durationSeconds: durationSeconds,
+              timestamp: timestamp
+            }
+          });
         } catch (e) {}
 
         resolve({
@@ -462,7 +473,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           sendResponse({ success: false, error: 'Invalid file ID' });
           return;
         }
-        chrome.identity.getAuthToken({ interactive: false }, async (token) => {
+        // Check local storage cache first for instant, zero-latency playback
+        try {
+          const cached = await chrome.storage.local.get([`audio_${fileId}`, 'latest_audio']);
+          if (cached && cached[`audio_${fileId}`]?.audioBase64) {
+            sendResponse({ success: true, base64Audio: cached[`audio_${fileId}`].audioBase64 });
+            return;
+          }
+          if (fileId.startsWith('vb_fallback_') || fileId.includes('Simulated')) {
+            if (cached?.latest_audio?.audioBase64) {
+              sendResponse({ success: true, base64Audio: cached.latest_audio.audioBase64 });
+              return;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('[VoiceBridge] Local audio cache lookup error:', storageErr);
+        }
+
+        chrome.identity.getAuthToken({ interactive: !!payload?.interactive }, async (token) => {
           if (chrome.runtime.lastError || !token) {
             sendResponse({ success: false, error: 'Not authenticated' });
             return;
@@ -483,7 +511,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
             }
             const base64 = btoa(binary);
-            sendResponse({ success: true, base64Audio: `data:audio/webm;base64,${base64}` });
+            const audioDataUri = `data:audio/webm;base64,${base64}`;
+            // Cache fetched audio for subsequent plays
+            try {
+              await chrome.storage.local.set({
+                [`audio_${fileId}`]: {
+                  audioBase64: audioDataUri,
+                  timestamp: Date.now()
+                }
+              });
+            } catch (e) {}
+            sendResponse({ success: true, base64Audio: audioDataUri });
           } catch (e) {
             sendResponse({ success: false, error: e.message });
           }

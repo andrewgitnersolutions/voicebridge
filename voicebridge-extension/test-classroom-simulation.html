@@ -97,7 +97,7 @@
     <ol>
       <li><strong>Floating Action Button:</strong> Look at the bottom right of the screen for the blue <em>"Record Voice"</em> pill button. Click it to open the recording modal.</li>
       <li><strong>Private Comments Test:</strong> Check that the microphone trigger icon appears next to the <em>Private Comment</em> area below, and NOT the public class comment.</li>
-      <li><strong>Audio Player Test:</strong> Verify that the simulated existing voice note below renders an inline player with play/pause, progress scrubber, and speed controls.</li>
+      <li><strong>Google Docs Comment Player:</strong> Verify that the simulated existing voice note below renders as a Google Docs-styled comment card with <strong>Play</strong> and <strong>Start Over</strong> buttons instead of the raw text link. Clicking Play plays audio directly in this tab without opening Drive!</li>
       <li><strong>Keyboard Accessibility:</strong> Press <kbd>Esc</kbd> to close any active modal, or <kbd>Space</kbd> to stop an in-progress recording.</li>
     </ol>
   </div>
@@ -196,7 +196,12 @@ if (typeof window.chrome === 'undefined' || !window.chrome.runtime || !window.ch
             isDemoMode: true,
             formattedChipText: '🎙️ VoiceBridge Note (' + timeStr + ') • Listen: ' + link
           }
-        }), 80);
+      } else if (msg.action === 'FETCH_DRIVE_AUDIO') {
+        const mockBase64Audio = 'data:audio/webm;codecs=opus;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwH/////////FUmpZ+tM17qCHR87GQAAAAAAAFlSu2u4tsjrO32+uGj37qST0ZOS36GVRc0=';
+        setTimeout(() => callback && callback({
+          success: true,
+          base64Audio: mockBase64Audio
+        }), 20);
       } else {
         setTimeout(() => callback && callback({ success: true }), 10);
       }

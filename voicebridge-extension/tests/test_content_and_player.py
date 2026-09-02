@@ -75,5 +75,32 @@ class TestContentAndPlayer(unittest.TestCase):
         self.assertIn('.punch-stage', self.content_js)
         self.assertIn('.punch-canvas', self.player_js)
 
+    def test_gdoc_comment_card_structure(self):
+        # Google Docs comment card container and header
+        self.assertIn('vb-gdoc-comment-card', self.player_js)
+        self.assertIn('vb-gdoc-comment-header', self.player_js)
+        self.assertIn('vb-gdoc-avatar', self.player_js)
+        self.assertIn('vb-gdoc-author-meta', self.player_js)
+        self.assertIn('vb-gdoc-menu-btn', self.player_js)
+
+    def test_play_and_start_over_buttons(self):
+        # Play and Start Over buttons
+        self.assertIn('vb-gdoc-play-btn', self.player_js)
+        self.assertIn('vb-gdoc-restart-btn', self.player_js)
+        self.assertIn('Start Over', self.player_js)
+        self.assertIn('restartBtn.addEventListener', self.player_js)
+        self.assertIn('audio.currentTime = 0', self.player_js)
+
+    def test_hide_raw_comment_text(self):
+        # Hides raw comment text so only the Google Docs player is visible
+        self.assertIn('vb-hide-raw-text', self.player_js)
+        self.assertIn('hideRawCommentContent', self.player_js)
+        self.assertIn("style.display = 'none'", self.player_js)
+
+    def test_in_page_playback_no_separate_tab(self):
+        # Verify audio stays 100% in-page and never opens Drive tabs
+        self.assertNotIn('window.open', self.player_js, "player.js must never call window.open to keep user in page")
+        self.assertIn('FETCH_DRIVE_AUDIO', self.player_js)
+
 if __name__ == '__main__':
     unittest.main()
