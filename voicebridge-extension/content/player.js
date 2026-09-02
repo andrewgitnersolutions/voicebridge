@@ -20,7 +20,8 @@
 
     // 1. Never inject inside Google Docs link hovercards, bubbles, or smart chip popups
     if (el.closest?.(
-      '.docs-bubble, .docs-hovercard-bubble, .docs-material-hovercard, ' +
+      '.docs-bubble, .docs-linkbubble-bubble, .appsElementsLinkPreview, .docos-linkbubble, #docos-link-bubble, ' +
+      '.docs-hovercard-bubble, .docs-material-hovercard, ' +
       '.docs-link-bubble, .docs-chip-hovercard, .docs-hovercard, ' +
       '.docos-hovercard, [role="tooltip"], .sketchy-bubble'
     )) {
@@ -351,38 +352,67 @@
     }
   }
 
+  function extractDriveFileInfo(link) {
+    if (!link) return null;
+    const candidates = [
+      link.getAttribute('data-rawhref'),
+      link.getAttribute('href'),
+      link.href
+    ];
+    for (const raw of candidates) {
+      if (!raw) continue;
+      let match = raw.match(DRIVE_LINK_REGEX);
+      if (match && match[1]) {
+        return { fileId: match[1], url: raw };
+      }
+      try {
+        const decoded = decodeURIComponent(raw);
+        match = decoded.match(DRIVE_LINK_REGEX);
+        if (match && match[1]) {
+          return { fileId: match[1], url: decoded };
+        }
+      } catch (e) {}
+    }
+    return null;
+  }
+
   function scanAndRenderPlayers() {
     if (isScanning) return;
     isScanning = true;
 
     try {
-      // 1. Scan for anchor tags containing Drive voice links
-      const links = document.querySelectorAll('a[href*="drive.google.com"]:not([' + PROCESSED_ATTR + '])');
+      // 1. Scan for anchor tags containing Drive voice links (including google.com/url wrappers and data-rawhref)
+      const links = document.querySelectorAll(
+        'a[href*="drive.google.com"]:not([' + PROCESSED_ATTR + ']), ' +
+        'a[data-rawhref*="drive.google.com"]:not([' + PROCESSED_ATTR + ']), ' +
+        'a[href*="google.com/url?q="]:not([' + PROCESSED_ATTR + '])'
+      );
       links.forEach((link) => {
         if (isExcludedOrEditing(link)) return;
 
-        const match = link.href.match(DRIVE_LINK_REGEX);
-        if (match && match[1]) {
-          const fileId = match[1];
+        const info = extractDriveFileInfo(link);
+        if (info && info.fileId) {
+          const fileId = info.fileId;
           const rawText = link.closest('div, p, span')?.textContent || link.textContent;
           
           const isAudioLink = rawText.includes('VoiceBridge') || 
                               rawText.includes('🎙️') || 
                               rawText.includes('Voice Note') || 
                               /\.(webm|mp3|wav|ogg|m4a)/i.test(rawText) || 
-                              /\.(webm|mp3|wav|ogg|m4a)/i.test(link.href) || 
-                              link.href.includes('export=download');
+                              /\.(webm|mp3|wav|ogg|m4a)/i.test(info.url) || 
+                              info.url.includes('export=download');
 
           if (isAudioLink) {
             link.setAttribute(PROCESSED_ATTR, 'true');
             const parent = link.parentElement;
             if (parent && !parent.querySelector('.voicebridge-inline-player')) {
               const isInsideNativeGDocComment = !!link.closest?.(
-                '.docos-docoview-view, .docos-docoview-comment, .docos-comment-view, ' +
-                '.docos-replyview, .docos-streamdocos-view, .docos-streamdocos-thread, ' +
-                '.docos-anchoredreplyview, .docos-anchored-view'
+                '.docos-replyview-body, .docos-anchoredreplyview-body, .docos-docoview-view, ' +
+                '.docos-docoview-comment, .docos-comment-view, .docos-replyview, ' +
+                '.docos-streamdocos-view, .docos-streamdocos-thread, .docos-anchoredreplyview, ' +
+                '.docos-anchored-view, [class*="docos-replyview"], [class*="docos-anchoredreplyview"]'
               );
-              const player = createInlinePlayer(fileId, link.href, rawText, isInsideNativeGDocComment);
+              const player = createInlinePlayer(fileId, info.url, rawText, isInsideNativeGDocComment);
               // Hide raw text and insert Google Docs comment player
               hideRawCommentContent(link);
               parent.appendChild(player);
@@ -392,21 +422,30 @@
       });
 
       // 2. Scan for plain text in submitted comment cards (strict leaf elements only)
-      const textContainers = document.querySelectorAll('.docos-streamdocos-view, .docos-docoview-view, div[data-message-id], .vb-rendered-comment');
+      const textContainers = document.querySelectorAll(
+        '.docos-replyview-body, .docos-anchoredreplyview-body, .docos-streamdocos-view, ' +
+        '.docos-docoview-view, div[data-message-id], .vb-rendered-comment'
+      );
       textContainers.forEach((container) => {
         if (container.getAttribute(PROCESSED_ATTR) || isExcludedOrEditing(container)) return;
         if (container.querySelector('.voicebridge-inline-player, textarea, input, [contenteditable="true"]')) return;
 
         const text = container.textContent;
         if (text.includes('VoiceBridge') && text.includes('drive.google.com')) {
-          const match = text.match(DRIVE_LINK_REGEX);
+          let match = text.match(DRIVE_LINK_REGEX);
+          if (!match) {
+            try {
+              match = decodeURIComponent(text).match(DRIVE_LINK_REGEX);
+            } catch (e) {}
+          }
           if (match && match[1]) {
             container.setAttribute(PROCESSED_ATTR, 'true');
             const fileId = match[1];
             const isInsideNativeGDocComment = !!container.closest?.(
-              '.docos-docoview-view, .docos-docoview-comment, .docos-comment-view, ' +
-              '.docos-replyview, .docos-streamdocos-view, .docos-streamdocos-thread, ' +
-              '.docos-anchoredreplyview, .docos-anchored-view'
+              '.docos-replyview-body, .docos-anchoredreplyview-body, .docos-docoview-view, ' +
+              '.docos-docoview-comment, .docos-comment-view, .docos-replyview, ' +
+              '.docos-streamdocos-view, .docos-streamdocos-thread, .docos-anchoredreplyview, ' +
+              '.docos-anchored-view, [class*="docos-replyview"], [class*="docos-anchoredreplyview"]'
             );
             const player = createInlinePlayer(fileId, match[0], text, isInsideNativeGDocComment);
             // Hide the raw text content inside the comment container

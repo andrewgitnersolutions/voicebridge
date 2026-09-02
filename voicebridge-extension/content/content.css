@@ -448,6 +448,8 @@
 }
 
 /* Seamless embedding directly inside native Google Docs comment cards */
+.docos-replyview-body .voicebridge-inline-player,
+.docos-anchoredreplyview-body .voicebridge-inline-player,
 .voicebridge-inline-player.vb-inside-gdoc-comment {
   background: transparent !important;
   border: none !important;
@@ -457,10 +459,14 @@
   max-width: 100% !important;
 }
 
+.docos-replyview-body .voicebridge-inline-player:hover,
+.docos-anchoredreplyview-body .voicebridge-inline-player:hover,
 .voicebridge-inline-player.vb-inside-gdoc-comment:hover {
   box-shadow: none !important;
 }
 
+.docos-replyview-body .voicebridge-inline-player .vb-gdoc-comment-header,
+.docos-anchoredreplyview-body .voicebridge-inline-player .vb-gdoc-comment-header,
 .voicebridge-inline-player.vb-inside-gdoc-comment .vb-gdoc-comment-header {
   display: none !important;
 }
