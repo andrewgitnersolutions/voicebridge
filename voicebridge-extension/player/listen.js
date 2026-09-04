@@ -5,16 +5,19 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const fileId = urlParams.get('id') || 'latest';
+  // No default id. This page only ever plays the recording named in the URL —
+  // falling back to "whatever was recorded last" leaked one user's voice note to
+  // another on a shared profile (see the same rule in service-worker.js).
+  const fileId = urlParams.get('id') || '';
   const audioPlayer = document.getElementById('audio-player');
   const fileNameEl = document.getElementById('file-name');
   const dateEl = document.getElementById('recording-date');
   const downloadBtn = document.getElementById('btn-download-audio');
 
-  // Try to load from chrome.storage.local
+  // Try to load from chrome.storage.local — the exact key only, never a fallback
   const storageKey = `audio_${fileId}`;
-  const data = await chrome.storage.local.get([storageKey, 'latest_audio']);
-  const audioRecord = data[storageKey] || data['latest_audio'];
+  const data = fileId ? await chrome.storage.local.get([storageKey]) : {};
+  const audioRecord = data[storageKey];
 
   if (audioRecord && audioRecord.audioBase64) {
     try {
@@ -38,9 +41,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
       console.error('[VoiceBridge] Playback error:', err);
       fileNameEl.textContent = 'Could not decode audio file';
+      dateEl.textContent = 'The saved recording could not be read.';
     }
   } else {
-    fileNameEl.textContent = 'Voice Note File Ready';
-    dateEl.textContent = 'Audio stream loaded';
+    fileNameEl.textContent = 'Could not decode audio file';
+    dateEl.textContent = fileId
+      ? 'This recording is not saved on this device. Local backups only play back in the browser profile that made them.'
+      : 'No recording was specified. Open this page from the link in your voice note.';
+    audioPlayer.removeAttribute('autoplay');
+    downloadBtn.style.display = 'none';
   }
 });

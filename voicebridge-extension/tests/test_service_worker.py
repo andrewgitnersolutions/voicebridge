@@ -102,7 +102,146 @@ class TestServiceWorker(unittest.TestCase):
         # Ensure service worker does not return success: true with dummy demo links on OAuth error
         self.assertIn("Google Drive sign-in failed:", self.sw_code)
         self.assertIn("chrome.runtime.lastError?.message", self.sw_code)
-        self.assertIn("latest_audio", self.sw_code)
+
+    def test_account_mismatch_is_checked_before_any_drive_write(self):
+        """A wrong-account upload must be stopped before the folder is created.
+
+        getOrCreateDriveFolder searches by name in whichever Drive the token
+        belongs to and creates the folder when it is missing, so checking after
+        it would leave a stray "VoiceBridge Recordings" folder in the wrong
+        account even when the upload itself was refused.
+        """
+        self.assertIn('resolveTokenAccountEmail', self.sw_code)
+        self.assertIn("drive/v3/about?fields=user(emailAddress)", self.sw_code)
+        self.assertIn("reason: 'account_mismatch'", self.sw_code)
+
+        gate = self.sw_code.index("reason: 'account_mismatch'")
+        folder = self.sw_code.index('const folderId = await getOrCreateDriveFolder(token)')
+        self.assertLess(
+            gate, folder,
+            'The mismatch gate must run before getOrCreateDriveFolder, '
+            'or a refused upload still creates a folder in the wrong Drive'
+        )
+
+    def test_account_mismatch_names_both_accounts(self):
+        """The response carries both addresses; "upload failed" is not actionable."""
+        self.assertIn('tokenEmail: tokenEmail', self.sw_code)
+        self.assertIn('pageEmail: pageEmail', self.sw_code)
+
+    def test_account_check_fails_open(self):
+        """An unresolvable account must not block recording.
+
+        about.get can fail for reasons that have nothing to do with the user's
+        accounts. Only a positive mismatch — both addresses known and different —
+        may stop an upload; anything else proceeds as before.
+        """
+        self.assertIn(
+            'if (tokenEmail && pageEmail && tokenEmail.toLowerCase() !== pageEmail.toLowerCase())',
+            self.sw_code
+        )
+        self.assertIn('return null;', self.sw_code)
+
+    def test_audio_cache_is_bounded_and_evicts(self):
+        """The cache had no ceiling and no eviction.
+
+        Once the 10 MB quota filled, every set() failed into an empty catch and
+        playback silently fell back to the network — it presented as "playback
+        got slow" with nothing to point at.
+        """
+        self.assertIn('AUDIO_CACHE_BUDGET_BYTES', self.sw_code)
+        self.assertIn('async function evictAudioCacheToFit', self.sw_code)
+        self.assertIn('chrome.storage.local.remove(evict)', self.sw_code)
+        # Oldest-first requires a comparable write time on every entry
+        self.assertIn('cachedAt: Date.now()', self.sw_code)
+        self.assertIn('(a, b) => a.cachedAt - b.cachedAt', self.sw_code)
+
+    def test_no_cache_write_fails_silently(self):
+        """Every storage write goes through the one reporting helper."""
+        self.assertIn('console.warn(\'[VoiceBridge] Local audio cache write failed:\'', self.sw_code)
+        self.assertEqual(
+            0, self.sw_code.count('} catch (e) {}'),
+            'An empty catch is how the quota failure stayed invisible'
+        )
+        self.assertEqual(
+            4, self.sw_code.count('cacheAudioLocally('),
+            'Cache writes must all go through cacheAudioLocally: 1 definition plus '
+            'the three call sites (post-upload, offline fallback, post-fetch)'
+        )
+
+    def test_the_only_copy_of_a_recording_reports_write_failure(self):
+        """When the upload failed, the local write is the recording.
+
+        Saying "audio saved locally" after that write failed sends the user
+        looking for a file that does not exist.
+        """
+        self.assertIn('const cachedLocally = await cacheAudioLocally(', self.sw_code)
+        self.assertIn('cachedLocally: cachedLocally', self.sw_code)
+        self.assertIn('please record again', self.sw_code)
+
+    def test_recording_state_survives_worker_eviction(self):
+        """Recording state must not live in a module variable.
+
+        An MV3 service worker is evicted when idle. A worker recycled mid-recording
+        lost the flag, so the UPLOAD_TO_DRIVE that followed was rejected as
+        unauthorised and the audio was gone.
+        """
+        self.assertNotIn(
+            'let activeRecordingSession', self.sw_code,
+            'Recording state is back in an evictable module variable'
+        )
+        self.assertIn('chrome.storage.session.set', self.sw_code)
+        self.assertIn('async function hasRecordingSession', self.sw_code)
+        self.assertIn('await hasRecordingSession(sender)', self.sw_code)
+
+    def test_recording_session_is_keyed_by_tab(self):
+        """One offscreen document means one recording; a single boolean let two
+        tabs record at once and collide over it."""
+        self.assertIn('RECORDING_SESSION_PREFIX', self.sw_code)
+        self.assertIn('sender?.tab?.id', self.sw_code)
+        self.assertIn("owner.key !== recordingSessionKey(sender)", self.sw_code)
+        self.assertIn('Another tab is already recording', self.sw_code)
+        # A closed tab must release the recorder, or nobody else can start one
+        self.assertIn('chrome.tabs.onRemoved.addListener', self.sw_code)
+
+    def test_offscreen_events_are_relayed_to_the_recording_tab(self):
+        """chrome.runtime.sendMessage from the offscreen document does not reach
+        content scripts — only chrome.tabs.sendMessage does.
+
+        Without this relay the live level meter and the "we didn't hear any
+        sound" warning never fired at all, in either recorder.
+        """
+        self.assertIn("action === 'AUDIO_LEVEL_UPDATE' || action === 'SILENCE_WARNING_TRIGGERED'", self.sw_code)
+        self.assertIn('chrome.tabs.sendMessage(cachedOwnerTabId, message)', self.sw_code)
+
+    def test_no_shared_latest_audio_key_anywhere(self):
+        """A cached recording is only ever addressable by its own file id.
+
+        A shared `latest_audio` key served the last recording made on the profile
+        to whoever asked next — one student's voice under another student's link
+        on a shared Chromebook. The guard is that the key exists in no JS file at
+        all, so neither a reader nor a writer can quietly come back.
+        """
+        offenders = []
+        for root, dirs, files in os.walk(EXTENSION_DIR):
+            dirs[:] = [d for d in dirs if d not in ('node_modules', 'dist', '.git', '__pycache__')]
+            for name in files:
+                if not name.endswith('.js'):
+                    continue
+                path = os.path.join(root, name)
+                with open(path, 'r', encoding='utf-8') as f:
+                    if 'latest_audio' in f.read():
+                        offenders.append(os.path.relpath(path, EXTENSION_DIR))
+        self.assertEqual(
+            [], offenders,
+            "latest_audio is a cross-user audio leak and must not be read or written: "
+            + ", ".join(offenders)
+        )
+
+    def test_audio_cache_is_served_only_by_exact_file_id(self):
+        """No id-shaped fallback may bypass the exact-key lookup."""
+        self.assertIn("chrome.storage.local.get([`audio_${fileId}`])", self.sw_code)
+        self.assertNotIn("vb_fallback_')", self.sw_code.replace("`vb_fallback_${Date.now()}`", ""))
+        self.assertNotIn("fileId.includes('Simulated')", self.sw_code)
 
 if __name__ == '__main__':
     unittest.main()
