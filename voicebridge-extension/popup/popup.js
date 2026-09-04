@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const autostartToggle = document.getElementById('toggle-autostart');
   const micSelect = document.getElementById('select-mic');
   const btnQuickRecord = document.getElementById('btn-quick-record');
+  const quickRecordHint = document.getElementById('quick-record-hint');
   const btnTestMic = document.getElementById('btn-test-mic');
   const micMeterFill = document.getElementById('mic-meter-fill');
   const micStatus = document.getElementById('mic-test-status');
@@ -171,9 +172,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Quick Record Button: Trigger on active tab or open recording workspace
+  // Where VoiceBridge can actually record. Named once so the message below and
+  // the manifest's content_scripts cannot drift apart in wording.
+  const SUPPORTED_SURFACES = 'a Google Doc, Google Slides, or Google Classroom page';
+
+  // Quick Record used to open test-classroom-simulation.html whenever it could not
+  // reach the page — a developer test fixture that is not in the shipped package,
+  // so in a real install every one of those paths opened a blank 404 tab. Tell the
+  // user where recording works instead, and leave the popup open so they can read it.
+  function showQuickRecordHint(text) {
+    if (!quickRecordHint) return;
+    quickRecordHint.textContent = text;
+    quickRecordHint.hidden = false;
+    btnQuickRecord.disabled = false;
+  }
+
+  // Quick Record Button: Trigger on active tab, or explain why it cannot
   btnQuickRecord.addEventListener('click', async () => {
     btnQuickRecord.disabled = true;
+    if (quickRecordHint) quickRecordHint.hidden = true;
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
@@ -185,9 +202,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         tab.url.startsWith('view-source:');
 
       if (isUnscriptableUrl) {
-        // If clicked on browser internal pages (e.g. chrome://extensions), open classroom test studio
-        await chrome.tabs.create({ url: chrome.runtime.getURL('test-classroom-simulation.html') });
-        window.close();
+        // Browser-internal pages (chrome://extensions, view-source:, PDFs) cannot
+        // take a content script at all — no amount of retrying changes that.
+        showQuickRecordHint(`VoiceBridge can't record on this page. Open ${SUPPORTED_SURFACES}, then try again.`);
         return;
       }
 
@@ -213,13 +230,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.close();
               }, 120);
             } else {
-              await chrome.tabs.create({ url: chrome.runtime.getURL('test-classroom-simulation.html') });
-              window.close();
+              showQuickRecordHint(`VoiceBridge can't record on this page. Open ${SUPPORTED_SURFACES}, then try again.`);
             }
           } catch (injectErr) {
-            console.warn('[VoiceBridge] Script injection failed, opening fallback studio:', injectErr);
-            await chrome.tabs.create({ url: chrome.runtime.getURL('test-classroom-simulation.html') });
-            window.close();
+            console.warn('[VoiceBridge] Script injection failed:', injectErr);
+            showQuickRecordHint(`VoiceBridge can't record on this page. Open ${SUPPORTED_SURFACES}, then try again.`);
           }
         } else {
           window.close();
@@ -227,8 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     } catch (err) {
       console.warn('[VoiceBridge] Trigger recording error:', err);
-      chrome.tabs.create({ url: chrome.runtime.getURL('test-classroom-simulation.html') });
-      window.close();
+      showQuickRecordHint(`VoiceBridge couldn't start recording here. Open ${SUPPORTED_SURFACES}, then try again.`);
     }
   });
 

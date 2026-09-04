@@ -68,5 +68,25 @@ class TestPopupAndUDL(unittest.TestCase):
         for body in script_tags:
             self.assertEqual(body.strip(), '', "Inline scripts are forbidden under Manifest V3 CSP")
 
+    def test_brand_palette_matches_the_website(self):
+        """Extension chrome uses the same brand tokens as voicebridge-ext.web.app
+        (--brand-primary #4f46e5 / --brand-primary-hover #4338ca)."""
+        with open(os.path.join(EXTENSION_DIR, 'popup', 'popup.css'), 'r', encoding='utf-8') as f:
+            popup_css = f.read()
+
+        self.assertIn('--vb-primary: #4f46e5;', self.content_css)
+        self.assertIn('--vb-primary-hover: #4338ca;', self.content_css)
+        self.assertIn('#4f46e5', popup_css)
+
+        # The old off-brand blue must be gone from both surfaces
+        for stale in ('#2563eb', '#1d4ed8'):
+            self.assertNotIn(stale, self.content_css)
+            self.assertNotIn(stale, popup_css)
+
+        # The player accent derives from the brand token rather than restating it,
+        # so themes retint it in one place
+        self.assertIn('--vb-player-accent: var(--vb-primary);', self.content_css)
+        self.assertIn('--vb-player-speed: var(--vb-primary);', self.content_css)
+
 if __name__ == '__main__':
     unittest.main()
