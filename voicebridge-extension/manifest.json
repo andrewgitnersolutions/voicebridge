@@ -3,7 +3,7 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvNDGC9sHnD/1fi7ZnzRbt9i6kD4TwdCLkgkTW7HBUmvtWds1slRI81zd2GVGiQBUjjb9vKylDLQJwQIIWnvPdfYHlhSMlPv/jHS4S3o+Ao+xVsDknM/8+ZanW5fYQLp3MjZR+CLNIUwMWlkEO+2feqDVrbWupJvDbNrV84JSCo9qTcNsK1gLRTq46xjXw1jNCGB3Ki1kc79f4spz6sDNDQQgXdF6vpG+QslZRvoAA+mcnjQgEPxswl2dxAnAqqJJW5IfSAV3tDpbrK2E0Dlypkhc62CQ7iIXLeBhbJttVGK5xjKVXoI87ZiRnhjFIK1nTzhyWY2q6mo0rbeoFPE0HwIDAQAB",
   "name": "VoiceBridge — Voice Feedback & Response for Classrooms",
   "short_name": "VoiceBridge",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Accessible voice recording for Special Education and K-12. Record oral responses in Google Classroom, Docs & Slides.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -70,7 +70,9 @@
         "icons/icon-16.png",
         "icons/icon-48.png",
         "icons/icon-128.png",
-        "content/content.css"
+        "content/content.css",
+        "assets/fonts/opendyslexic-regular.woff2",
+        "assets/fonts/opendyslexic-bold.woff2"
       ],
       "matches": [
         "https://classroom.google.com/*",

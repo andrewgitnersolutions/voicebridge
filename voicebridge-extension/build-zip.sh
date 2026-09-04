@@ -6,7 +6,10 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="${ROOT_DIR}/dist"
-ZIP_NAME="voicebridge-v1.1.0.zip"
+# Read the version from the manifest rather than restating it: a hardcoded name
+# silently ships an archive labelled with the wrong version after a bump.
+VERSION="$(python3 -c "import json;print(json.load(open('${ROOT_DIR}/manifest.json'))['version'])")"
+ZIP_NAME="voicebridge-v${VERSION}.zip"
 ZIP_PATH="${DIST_DIR}/${ZIP_NAME}"
 
 echo "=========================================="
@@ -23,6 +26,15 @@ fi
 for size in 16 48 128; do
   if [ ! -f "${ROOT_DIR}/icons/icon-${size}.png" ]; then
     echo "❌ Error: icons/icon-${size}.png missing!"
+    exit 1
+  fi
+done
+
+# The dyslexia-friendly option is a named accessibility feature; without these
+# files it silently falls back to a generic sans and does nothing.
+for font in opendyslexic-regular opendyslexic-bold; do
+  if [ ! -f "${ROOT_DIR}/assets/fonts/${font}.woff2" ]; then
+    echo "❌ Error: assets/fonts/${font}.woff2 missing!"
     exit 1
   fi
 done
@@ -47,6 +59,7 @@ zip -r "${ZIP_PATH}" \
   permissions/ \
   player/ \
   icons/ \
+  assets/ \
   -x "*.DS_Store" \
   -x "__pycache__*" \
   -x "*.git*"
