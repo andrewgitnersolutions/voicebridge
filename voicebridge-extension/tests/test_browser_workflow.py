@@ -536,6 +536,86 @@ class TestVoiceBridgeWorkflowComprehensive(unittest.TestCase):
         self.assertEqual(sim_auto.recording_state, 'RECORDING')
         self.assertIsNotNone(sim_auto.active_modal.querySelector('#vb-stop-btn'))
 
+    # 9. Google Docs Comment Audio Player: in-page playback, Play/Pause toggle, Rewind 5s button
+    def test_09_gdoc_comment_player_workflow(self):
+        # 1. Read player.js and content.css
+        player_path = os.path.join(EXTENSION_DIR, 'content', 'player.js')
+        css_path = os.path.join(EXTENSION_DIR, 'content', 'content.css')
+        with open(player_path, 'r', encoding='utf-8') as f:
+            player_src = f.read()
+        with open(css_path, 'r', encoding='utf-8') as f:
+            css_src = f.read()
+
+        # 2. Verify Google Docs comment card classes exist in both JS and CSS
+        self.assertIn('.vb-gdoc-comment-card', css_src)
+        self.assertIn('vb-gdoc-comment-card', player_src)
+        self.assertIn('vb-gdoc-play-btn', player_src)
+        self.assertIn('vb-gdoc-rewind-btn', player_src)
+        self.assertIn('vb-hide-raw-text', css_src)
+        self.assertIn('vb-hide-raw-text', player_src)
+
+        # 3. Simulate In-Page Player DOM interaction
+        comment_card = SimulatedElement('div', class_names=['voicebridge-inline-player', 'vb-gdoc-comment-card'])
+        play_btn = SimulatedElement('button', class_names=['vb-gdoc-btn', 'vb-gdoc-play-btn', 'vb-play-btn'], text_content='▶ Play')
+        rewind_btn = SimulatedElement('button', class_names=['vb-gdoc-btn', 'vb-gdoc-rewind-btn'], text_content='↺ Rewind 5 seconds')
+        time_display = SimulatedElement('span', class_names=['vb-gdoc-time-current', 'vb-time-display'], text_content='0:00')
+        audio_mock = {'paused': True, 'currentTime': 0.0, 'duration': 35.0}
+        REWIND_SECONDS = 5
+
+        def on_play_click(e):
+            if audio_mock['paused']:
+                audio_mock['paused'] = False
+                play_btn.textContent = '⏸ Pause'
+                play_btn.classList.add('vb-playing')
+            else:
+                audio_mock['paused'] = True
+                play_btn.textContent = '▶ Play'
+                play_btn.classList.remove('vb-playing')
+
+        def on_rewind_click(e):
+            # Steps back a few seconds, clamped at zero, without touching play/pause state
+            audio_mock['currentTime'] = max(0.0, audio_mock['currentTime'] - REWIND_SECONDS)
+            mins = int(audio_mock['currentTime'] // 60)
+            secs = int(audio_mock['currentTime'] % 60)
+            time_display.textContent = f'{mins}:{secs:02d}'
+
+        play_btn.addEventListener('click', on_play_click)
+        rewind_btn.addEventListener('click', on_rewind_click)
+
+        comment_card.children.extend([play_btn, rewind_btn, time_display])
+
+        # Test initial state
+        self.assertEqual(play_btn.textContent, '▶ Play')
+        self.assertTrue(audio_mock['paused'])
+
+        # Click Play -> In-page playback begins, button toggles to Pause
+        play_btn.click()
+        self.assertFalse(audio_mock['paused'])
+        self.assertEqual(play_btn.textContent, '⏸ Pause')
+        self.assertIn('vb-playing', play_btn.classList)
+
+        # Simulate audio played 15 seconds
+        audio_mock['currentTime'] = 15.0
+        time_display.textContent = '0:15'
+
+        # Click Rewind -> Steps back 5s and keeps playing
+        rewind_btn.click()
+        self.assertEqual(audio_mock['currentTime'], 10.0)
+        self.assertEqual(time_display.textContent, '0:10')
+        self.assertFalse(audio_mock['paused'])
+        self.assertEqual(play_btn.textContent, '⏸ Pause')
+
+        # Rewinding near the start clamps at 0:00 rather than going negative
+        audio_mock['currentTime'] = 2.0
+        rewind_btn.click()
+        self.assertEqual(audio_mock['currentTime'], 0.0)
+        self.assertEqual(time_display.textContent, '0:00')
+
+        # Click Pause -> Pauses in place
+        play_btn.click()
+        self.assertTrue(audio_mock['paused'])
+        self.assertEqual(play_btn.textContent, '▶ Play')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -20,6 +20,55 @@ class TestManifest(unittest.TestCase):
         self.assertTrue(self.manifest.get('description'), "Description must be present")
         self.assertLessEqual(len(self.manifest.get('description', '')), 132, "Description should be <= 132 chars for CWS")
 
+    def test_every_declared_resource_exists_on_disk(self):
+        """A manifest may not name a file that is not there.
+
+        The dyslexia-friendly font was named in CSS with nothing bundled behind
+        it, so the feature silently did nothing on the Chromebooks this product
+        runs on. Declaring a path is not the same as shipping the file.
+        """
+        declared = []
+        for entry in self.manifest.get('content_scripts', []):
+            declared += entry.get('js', []) + entry.get('css', [])
+        for entry in self.manifest.get('web_accessible_resources', []):
+            declared += entry.get('resources', [])
+        background = self.manifest.get('background', {}).get('service_worker')
+        if background:
+            declared.append(background)
+        action_popup = self.manifest.get('action', {}).get('default_popup')
+        if action_popup:
+            declared.append(action_popup)
+        declared += list(self.manifest.get('icons', {}).values())
+        declared += list(self.manifest.get('action', {}).get('default_icon', {}).values())
+
+        missing = [rel for rel in set(declared)
+                   if '*' not in rel and not os.path.exists(os.path.join(EXTENSION_DIR, rel))]
+        self.assertEqual([], missing, 'manifest.json declares files that do not exist: %r' % missing)
+
+    def test_bundled_font_backs_the_dyslexic_option(self):
+        """The OpenDyslexic option must resolve to a real, loadable font."""
+        css_path = os.path.join(EXTENSION_DIR, 'content', 'content.css')
+        with open(css_path, 'r', encoding='utf-8') as f:
+            css = f.read()
+
+        self.assertIn("font-family: 'OpenDyslexic';", css, '@font-face declaration missing')
+        self.assertIn("opendyslexic-regular.woff2", css)
+
+        # Every url() in an @font-face must point at a file that exists, resolved
+        # relative to the stylesheet the way Chrome resolves it
+        import re
+        for rel in re.findall(r"src:\s*url\('([^']+)'\)", css):
+            resolved = os.path.normpath(os.path.join(EXTENSION_DIR, 'content', rel))
+            self.assertTrue(os.path.exists(resolved), 'Font file missing: %s' % rel)
+            self.assertGreater(os.path.getsize(resolved), 1024, 'Font file looks empty: %s' % rel)
+
+        # ...and be reachable from the page that uses it
+        resources = []
+        for entry in self.manifest.get('web_accessible_resources', []):
+            resources += entry.get('resources', [])
+        self.assertIn('assets/fonts/opendyslexic-regular.woff2', resources,
+                      'The font must be web-accessible or the content script cannot load it')
+
     def test_icons_exist_and_dimensions(self):
         icons = self.manifest.get('icons', {})
         self.assertIn('16', icons)

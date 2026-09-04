@@ -25,6 +25,20 @@ let isStopping = false;
 let isAborted = false;
 let lastLevelEmitTime = 0;
 let lastEmittedLevel = -1;
+let maxDurationTimeoutId = null;
+let hitMaxDuration = false;
+
+// Hard ceiling on a single recording. Unbounded audio is base64-encoded whole,
+// pushed through chrome.runtime.sendMessage in one message, and uploaded as a
+// single non-chunked multipart request — the chain gives out long before a
+// student notices the mic is still running.
+//
+// The recording UI enforces the same limit and stops with a warning; this is the
+// backstop for when it cannot, e.g. the tab was torn down mid-recording. The
+// grace period lets the visible timer win under normal conditions, so the user
+// sees the countdown rather than an unexplained cut.
+const MAX_RECORDING_SECONDS = 300;
+const MAX_RECORDING_GRACE_SECONDS = 5;
 
 async function startRecording(requestedDeviceId, requestedDeviceLabel) {
   if (isStarting) {
@@ -40,6 +54,7 @@ async function startRecording(requestedDeviceId, requestedDeviceLabel) {
 
   try {
     recordedChunks = [];
+    hitMaxDuration = false;
     silenceWarningEmitted = false;
     clippingWarningEmitted = false;
     consecutiveSilenceFrames = 0;
@@ -211,6 +226,22 @@ async function startRecording(requestedDeviceId, requestedDeviceLabel) {
     mediaRecorder.start(250);
     recordingStartTime = Date.now();
 
+    // Pause rather than stop: a paused recorder still answers requestData() and
+    // stop(), so whatever was said up to the limit is still recoverable. Stopping
+    // here would leave the later STOP_RECORDING with an inactive recorder and
+    // throw the recording away.
+    if (maxDurationTimeoutId) clearTimeout(maxDurationTimeoutId);
+    maxDurationTimeoutId = setTimeout(() => {
+      maxDurationTimeoutId = null;
+      if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+      try {
+        mediaRecorder.requestData();
+        mediaRecorder.pause();
+        hitMaxDuration = true;
+        console.warn('[VoiceBridge Offscreen] Recording capped at', MAX_RECORDING_SECONDS, 'seconds');
+      } catch (e) {}
+    }, (MAX_RECORDING_SECONDS + MAX_RECORDING_GRACE_SECONDS) * 1000);
+
     // 4. Start Level Monitoring, Silence Detection & Clipping Guard
     startAudioAnalysisLoop();
 
@@ -306,7 +337,11 @@ function stopRecording() {
         return resolve({ success: false, error: 'Not recording' });
       }
 
-      const durationSeconds = Math.max(0.5, (Date.now() - recordingStartTime) / 1000.0);
+      // Wall-clock time is wrong once the cap has paused capture — the audio
+      // stops at the limit however long the recorder sits there afterwards.
+      const durationSeconds = hitMaxDuration
+        ? MAX_RECORDING_SECONDS
+        : Math.max(0.5, (Date.now() - recordingStartTime) / 1000.0);
       let resolved = false;
 
       // Fallback timeout to prevent hanging forever if onstop fails to fire
@@ -337,7 +372,8 @@ function stopRecording() {
             resolve({
               success: true,
               audioBase64: base64Data,
-              durationSeconds: durationSeconds
+              durationSeconds: durationSeconds,
+              maxDurationReached: hitMaxDuration
             });
           };
           reader.onerror = () => {
@@ -354,7 +390,7 @@ function stopRecording() {
       };
 
       try {
-        if (mediaRecorder.state === 'recording') {
+        if (mediaRecorder.state === 'recording' || mediaRecorder.state === 'paused') {
           mediaRecorder.requestData();
         }
       } catch (e) {}
@@ -391,6 +427,10 @@ function cancelRecording() {
   isAborted = true;
   isStarting = false;
   isStopping = false;
+  if (maxDurationTimeoutId) {
+    clearTimeout(maxDurationTimeoutId);
+    maxDurationTimeoutId = null;
+  }
   if (animFrameId) {
     cancelAnimationFrame(animFrameId);
     animFrameId = null;
@@ -406,6 +446,10 @@ function cancelRecording() {
 function cleanUpStreams() {
   isStarting = false;
   isStopping = false;
+  if (maxDurationTimeoutId) {
+    clearTimeout(maxDurationTimeoutId);
+    maxDurationTimeoutId = null;
+  }
   if (destinationNode && destinationNode.stream) {
     destinationNode.stream.getTracks().forEach((track) => track.stop());
     destinationNode = null;
