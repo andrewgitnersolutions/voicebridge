@@ -402,7 +402,7 @@ writing a fix, and that has not happened. See §12.
 
 ## 9. P3 — verify or watch
 
-OAuth consent screen may still be in Testing (100-user cap — **confirm before any pilot**) · Lexend loads from `fonts.googleapis.com` via `@import` in an injected stylesheet (CSP, blocked school networks, FERPA optics — note OpenDyslexic is now bundled locally, so Lexend is the only remaining network font) · stale `selectedAudioDeviceId` after a permission reset · mic disconnect mid-recording is unhandled · extension reload mid-recording orphans the offscreen document · `document.execCommand` is deprecated and is now the main Docs insertion path · Docs undo behaviour after an `execCommand` insert · browser zoom and display scaling with `getBoundingClientRect`-positioned overlays · a player throwing after `hideRawCommentContent` leaves a visibly empty comment · Docs sidebar virtualisation with edited and resolved comments · RTL locales.
+~~OAuth consent screen may still be in Testing~~ — **confirmed out of Testing on 2026-09-04, so the 100-user cap no longer applies** · Lexend loads from `fonts.googleapis.com` via `@import` in an injected stylesheet (CSP, blocked school networks, FERPA optics — note OpenDyslexic is now bundled locally, so Lexend is the only remaining network font) · stale `selectedAudioDeviceId` after a permission reset · mic disconnect mid-recording is unhandled · extension reload mid-recording orphans the offscreen document · `document.execCommand` is deprecated and is now the main Docs insertion path · Docs undo behaviour after an `execCommand` insert · browser zoom and display scaling with `getBoundingClientRect`-positioned overlays · a player throwing after `hideRawCommentContent` leaves a visibly empty comment · Docs sidebar virtualisation with edited and resolved comments · RTL locales.
 
 Cleared since the last handoff: `extractDuration` grabbing any parenthetical (fixed
 with P1-5) · a deleted Drive file leaving a dead play button (it now says the
@@ -455,9 +455,9 @@ syntax error. `test_dist_zip_package` now walks every `chrome.runtime.getURL()` 
 in the source and fails if the target is not in the archive. Confirmed to fail when
 the old reference is put back.
 
-**Before uploading:** confirm the OAuth consent screen is out of Testing (§9) — the
-100-user cap applies while it is, and it is the one thing that will stop a pilot
-regardless of what is in the package.
+**Before uploading:** the OAuth consent screen was confirmed out of Testing on
+2026-09-04, so nothing gates the upload itself. The package carries no permission or
+OAuth scope change, so it should not trigger a fresh permission review.
 
 ---
 
@@ -504,5 +504,13 @@ the service worker console and the network tab, and note which path succeeded �
 policy, which is the realistic district configuration. If both fail there, that is a
 product-level decision (share-at-upload, or a different storage model), not a code fix.
 
-**3. Confirm the OAuth consent screen is out of Testing** before any pilot — the
-100-user cap applies while it is in Testing.
+**3. ~~Confirm the OAuth consent screen is out of Testing~~ — DONE (2026-09-04).**
+Verified out of Testing, so the 100-user cap does not apply. Nothing further needed.
+
+---
+
+**Where that leaves a pilot.** Item 3 is closed and item 1 is down to hardening, so
+**item 2 is the only open question that can still invalidate the product** rather
+than degrade it. Everything else on this list makes VoiceBridge better; item 2
+decides whether the core loop — a teacher listening to a student's voice note —
+works under real district policy at all. Do it before a pilot, not after.
