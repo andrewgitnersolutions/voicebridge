@@ -5,16 +5,46 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap');
 
+/* OpenDyslexic, bundled rather than assumed.
+   The dyslexia-friendly option named a font family with no @font-face and no
+   bundled file, so it silently fell back to Comic Sans and then to generic sans
+   on Chromebooks — which is exactly where this product runs. A named
+   accessibility feature that does nothing is worse than no feature.
+   SIL Open Font License 1.1; see assets/fonts/OFL.txt. */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('../assets/fonts/opendyslexic-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('../assets/fonts/opendyslexic-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* --- Root Variables & Theme Tokens --- */
 :root {
   --vb-font-family: 'Lexend', system-ui, -apple-system, sans-serif;
-  --vb-primary: #2563eb;
-  --vb-primary-hover: #1d4ed8;
+  /* Brand palette, matching voicebridge-ext.web.app (--brand-primary et al.) */
+  --vb-primary: #4f46e5;
+  --vb-primary-hover: #4338ca;
+  --vb-primary-light: #eef2ff;
+  --vb-primary-tint: #e0e7ff;
+  --vb-primary-ring: rgba(79, 70, 229, 0.22);
   --vb-success: #16a34a;
   --vb-success-hover: #15803d;
   --vb-warning: #d97706;
   --vb-warning-hover: #b45309;
   --vb-danger: #dc2626;
+  /* Same hue, dark enough to clear 4.5:1 as body text on a light ground.
+     --vb-danger itself is used for large shapes (the pulse dot), where it passes. */
+  --vb-danger-strong: #b91c1c;
+  --vb-danger-soft: #fef2f2;
   --vb-surface: #ffffff;
   --vb-surface-dark: #0f172a;
   --vb-text: #0f172a;
@@ -39,6 +69,8 @@
   --vb-success: #4ade80;
   --vb-warning: #fb923c;
   --vb-danger: #f87171;
+  --vb-danger-strong: #f87171;
+  --vb-danger-soft: #450a0a;
   --vb-surface: #000000;
   --vb-surface-dark: #000000;
   --vb-text: #ffffff;
@@ -424,27 +456,46 @@
   display: none !important;
 }
 
-/* --- Google Docs-Styled Inline Voice Comment Player Card --- */
+/* --- Google Docs Voice Comment Bubble (Rewind 5s / Play / Pause) --- */
 .voicebridge-inline-player,
 .voicebridge-inline-player.vb-gdoc-comment-card {
+  /* Single knob for the player accent colour used across all variants */
+  --vb-player-accent: var(--vb-primary);
+  --vb-player-accent-hover: var(--vb-primary-hover);
+  --vb-player-accent-ring: var(--vb-primary-ring);
+  --vb-player-accent-soft: var(--vb-primary-light);
+  --vb-player-speed: var(--vb-primary);
+  --vb-player-on-accent: #ffffff;
+  --vb-player-icon: #3c4043;
+  --vb-player-error: var(--vb-danger-strong);
+  --vb-player-error-soft: var(--vb-danger-soft);
+  /* Surface knobs. The card used to hardcode Docs' light greys, so it stayed a
+     white rectangle with near-black text in a dark Google Doc. */
+  --vb-player-surface: #ffffff;
+  --vb-player-text: #202124;
+  --vb-player-text-muted: #5f6368;
+  --vb-player-border: var(--vb-primary-tint);
+  --vb-player-hover: #f1f3f4;
+  --vb-player-speed-hover: var(--vb-primary-light);
+
   margin: 8px 0;
-  padding: 12px 16px;
-  background: #ffffff;
-  border: 1px solid #dadce0;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  padding: 14px 16px 12px;
+  background: var(--vb-player-surface);
+  border: 1px solid var(--vb-player-border);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.18), 0 6px 16px rgba(79, 70, 229, 0.12);
   font-family: 'Google Sans', Roboto, var(--vb-font-family), system-ui, -apple-system, sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-width: 380px;
+  gap: 12px;
+  max-width: 320px;
   box-sizing: border-box;
-  color: #202124;
+  color: var(--vb-player-text);
   transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .voicebridge-inline-player.vb-gdoc-comment-card:hover {
-  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 2px 4px rgba(60, 64, 67, 0.2), 0 10px 24px rgba(79, 70, 229, 0.18);
 }
 
 /* Seamless embedding directly inside native Google Docs comment cards */
@@ -465,13 +516,14 @@
   box-shadow: none !important;
 }
 
+/* Google Docs already renders its own author row above the card */
 .docos-replyview-body .voicebridge-inline-player .vb-gdoc-comment-header,
 .docos-anchoredreplyview-body .voicebridge-inline-player .vb-gdoc-comment-header,
 .voicebridge-inline-player.vb-inside-gdoc-comment .vb-gdoc-comment-header {
   display: none !important;
 }
 
-/* Google Docs Comment Header (Avatar, Author, Timestamp, Options Menu) */
+/* Google Docs Comment Header (Avatar, Label, Duration, Options / Close) */
 .vb-gdoc-comment-header,
 .vb-player-header {
   display: flex;
@@ -484,13 +536,23 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #e8f0fe;
-  color: #1a73e8;
+  background: var(--vb-player-accent-soft);
+  color: var(--vb-player-accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
   flex-shrink: 0;
+}
+
+.vb-gdoc-avatar-icon {
+  display: flex;
+  width: 18px;
+  height: 18px;
+}
+
+.vb-gdoc-avatar-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .vb-gdoc-author-meta {
@@ -501,16 +563,24 @@
 }
 
 .vb-gdoc-author-name,
+.vb-player-title,
+.vb-gdoc-timestamp {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vb-gdoc-author-name,
 .vb-player-title {
   font-size: 13px;
   font-weight: 600;
-  color: #202124;
+  color: var(--vb-player-text);
   line-height: 1.2;
 }
 
 .vb-gdoc-timestamp {
   font-size: 11px;
-  color: #5f6368;
+  color: var(--vb-player-text-muted);
   line-height: 1.2;
   margin-top: 2px;
 }
@@ -518,17 +588,21 @@
 .vb-gdoc-menu-btn {
   background: none;
   border: none;
-  color: #5f6368;
-  font-size: 16px;
+  color: var(--vb-player-text-muted);
+  font-size: 15px;
   cursor: pointer;
-  padding: 4px 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border-radius: 50%;
   line-height: 1;
+  flex-shrink: 0;
   transition: background 0.15s;
 }
 
 .vb-gdoc-menu-btn:hover {
-  background: #f1f3f4;
+  background: var(--vb-player-hover);
+  color: var(--vb-player-text);
 }
 
 /* Google Docs Comment Body */
@@ -538,70 +612,156 @@
   gap: 10px;
 }
 
+/* Control cluster: Rewind 5s • Play/Pause */
 .vb-gdoc-player-controls,
 .vb-player-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 22px;
+  padding: 2px 0 4px;
 }
 
-/* Google Material Pill Buttons (Play and Start Over) */
 .vb-gdoc-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 17px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
   border: none;
+  padding: 0;
+  cursor: pointer;
   outline: none;
   user-select: none;
-  white-space: nowrap;
+  font-family: inherit;
+  transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
+.vb-gdoc-btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--vb-player-accent-ring);
+}
+
+/* Secondary circular button (Rewind) */
+.vb-gdoc-circle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--vb-player-icon);
+}
+
+.vb-gdoc-circle-btn:hover {
+  background: var(--vb-player-accent-soft);
+  color: var(--vb-player-accent);
+}
+
+.vb-gdoc-circle-btn:active {
+  transform: scale(0.94);
+}
+
+.vb-gdoc-circle-btn .vb-gdoc-btn-icon {
+  width: 21px;
+  height: 21px;
+}
+
+/* Primary Play / Pause circle */
 .vb-gdoc-play-btn,
 .vb-play-btn {
-  background: #1a73e8;
-  color: #ffffff;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--vb-player-accent);
+  color: var(--vb-player-on-accent);
+  box-shadow: 0 0 0 5px var(--vb-player-accent-ring);
+  flex-shrink: 0;
 }
 
 .vb-gdoc-play-btn:hover,
 .vb-play-btn:hover {
-  background: #1765cc;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  background: var(--vb-player-accent-hover);
+  box-shadow: 0 0 0 7px var(--vb-player-accent-ring);
+}
+
+.vb-gdoc-play-btn:active,
+.vb-play-btn:active {
+  transform: scale(0.95);
 }
 
 .vb-gdoc-play-btn.vb-playing {
-  background: #185abc;
+  background: var(--vb-player-accent-hover);
 }
 
-.vb-gdoc-restart-btn {
-  background: #f1f3f4;
-  color: #3c4043;
-  border: 1px solid #dadce0;
+.vb-gdoc-play-btn .vb-gdoc-btn-icon {
+  width: 24px;
+  height: 24px;
+  /* Optically centre the play triangle inside the circle */
+  margin-left: 2px;
 }
 
-.vb-gdoc-restart-btn:hover {
-  background: #e8eaed;
-  color: #202124;
+.vb-gdoc-play-btn.vb-playing .vb-gdoc-btn-icon {
+  margin-left: 0;
 }
 
 .vb-gdoc-btn-icon {
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
+  pointer-events: none;
 }
 
-/* Scrubber & Timeline */
+.vb-gdoc-btn-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Host-page hardening.
+   The icons carry fill="currentColor" as a presentation attribute, which is the
+   LOWEST-priority way to set fill — any Google Docs rule matching svg or path
+   overrides it and the glyph renders in Docs' grey. These rules restate the fill
+   as real CSS so our icons keep their colour inside a comment card. */
+.voicebridge-inline-player .vb-gdoc-play-btn svg,
+.voicebridge-inline-player .vb-gdoc-play-btn svg path,
+.voicebridge-inline-player .vb-gdoc-play-btn svg rect {
+  fill: var(--vb-player-on-accent) !important;
+  stroke: none !important;
+}
+
+.voicebridge-inline-player .vb-gdoc-circle-btn svg,
+.voicebridge-inline-player .vb-gdoc-circle-btn svg path,
+.voicebridge-inline-player .vb-gdoc-circle-btn svg polyline,
+.voicebridge-inline-player .vb-gdoc-circle-btn svg line,
+.voicebridge-inline-player .vb-gdoc-circle-btn svg circle {
+  fill: none !important;
+  stroke: currentColor !important;
+}
+
+.voicebridge-inline-player .vb-gdoc-avatar svg,
+.voicebridge-inline-player .vb-gdoc-avatar svg path,
+.voicebridge-inline-player .vb-gdoc-avatar svg rect {
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+/* Scrubber, timings & playback speed */
 .vb-gdoc-scrubber-row {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Playback failure message. Says which failure it was — no access, deleted, or
+   offline — so the reader knows whether there is anything they can do about it. */
+.voicebridge-inline-player .vb-gdoc-error {
+  margin-top: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--vb-player-error-soft);
+  border: 1px solid var(--vb-player-error);
+  color: var(--vb-player-error);
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 500;
+  text-align: left;
 }
 
 .vb-gdoc-time-current,
@@ -609,7 +769,7 @@
 .vb-gdoc-time-duration {
   font-size: 11px;
   font-weight: 500;
-  color: #5f6368;
+  color: var(--vb-player-text-muted);
   min-width: 26px;
   font-variant-numeric: tabular-nums;
 }
@@ -618,7 +778,7 @@
 .vb-scrubber-track {
   flex: 1;
   height: 4px;
-  background: #e8eaed;
+  background: var(--vb-primary-tint);
   border-radius: 999px;
   position: relative;
   cursor: pointer;
@@ -626,39 +786,149 @@
 }
 
 .vb-gdoc-scrubber-track:hover,
-.vb-scrubber-track:hover {
+.vb-scrubber-track:hover,
+.vb-gdoc-scrubber-track:focus-visible {
   height: 6px;
+}
+
+.vb-gdoc-scrubber-track:focus-visible {
+  outline: 2px solid var(--vb-player-accent);
+  outline-offset: 3px;
 }
 
 .vb-gdoc-scrubber-progress,
 .vb-scrubber-progress {
   height: 100%;
-  background: #1a73e8;
+  background: var(--vb-player-accent);
   border-radius: 999px;
   width: 0%;
 }
 
 .vb-gdoc-speed-btn,
 .vb-speed-btn {
-  padding: 2px 6px;
-  font-size: 11px;
-  font-weight: 600;
-  background: #f1f3f4;
-  color: #5f6368;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  background: transparent;
+  color: var(--vb-player-speed);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-variant-numeric: tabular-nums;
   transition: background 0.15s;
 }
 
 .vb-gdoc-speed-btn:hover,
 .vb-speed-btn:hover {
-  background: #e8eaed;
-  color: #202124;
+  background: var(--vb-player-speed-hover);
+}
+
+/* --- Free-floating comment bubble shown right after a recording --- */
+#voicebridge-voice-bubble {
+  position: fixed;
+  z-index: 10000000;
+  animation: vbBubblePop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+
+@keyframes vbBubblePop {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+#voicebridge-voice-bubble .voicebridge-inline-player {
+  margin: 0;
+  max-width: 320px;
+  min-width: 280px;
+}
+
+/* Speech-bubble tail so the card reads as a comment anchored to the page */
+.voicebridge-inline-player.vb-bubble-variant {
+  position: relative;
+}
+
+.voicebridge-inline-player.vb-bubble-variant::before,
+.voicebridge-inline-player.vb-bubble-variant::after {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  /* content.js sets --vb-tail-x so the tail points at whatever the bubble is anchored to */
+  left: var(--vb-tail-x, 28px);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+}
+
+.voicebridge-inline-player.vb-bubble-variant::before {
+  border-top: 11px solid var(--vb-player-border);
+}
+
+/* Inner (white) triangle sits 1px higher and narrower, leaving only the border edge visible */
+.voicebridge-inline-player.vb-bubble-variant::after {
+  bottom: -9px;
+  left: calc(var(--vb-tail-x, 28px) + 1px);
+  border-left-width: 9px;
+  border-right-width: 9px;
+  border-top: 10px solid var(--vb-player-surface);
+}
+
+/* Tail flips to the top edge when the bubble is placed below its anchor */
+.voicebridge-inline-player.vb-bubble-variant.vb-tail-top::before,
+.voicebridge-inline-player.vb-bubble-variant.vb-tail-top::after {
+  bottom: auto;
+  top: -11px;
+  border-top: none;
+}
+
+.voicebridge-inline-player.vb-bubble-variant.vb-tail-top::before {
+  border-bottom: 11px solid var(--vb-player-border);
+}
+
+.voicebridge-inline-player.vb-bubble-variant.vb-tail-top::after {
+  top: -9px;
+  border-bottom: 10px solid var(--vb-player-surface);
+}
+
+/* Dark surface (Google Docs dark theme, and any other dark host page).
+   Applied by content.js from the measured background behind the card, NOT from
+   prefers-color-scheme: that reports the OS setting, so a Doc left in light mode
+   on a dark-themed machine would get an unreadable dark card. Docs does not
+   expose its theme as a stable class, and the measured colour is true either way. */
+.voicebridge-inline-player.vb-dark-surface,
+.voicebridge-inline-player.vb-dark-surface.vb-gdoc-comment-card {
+  --vb-player-surface: #1f2023;
+  --vb-player-text: #e8eaed;
+  --vb-player-text-muted: #9aa0a6;
+  --vb-player-border: #3c4043;
+  --vb-player-hover: #303134;
+  --vb-player-icon: #e8eaed;
+  --vb-player-accent-soft: #2d2e46;
+  --vb-player-speed-hover: #2d2e46;
+  /* The light-theme red reads at only ~2.5:1 on this ground; measured at 6.3:1 */
+  --vb-player-error: #f28b82;
+  --vb-player-error-soft: #3a1414;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.voicebridge-inline-player.vb-dark-surface.vb-gdoc-comment-card:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6), 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Scrubber track needs to read as a groove against the dark card, not vanish */
+.voicebridge-inline-player.vb-dark-surface .vb-gdoc-scrubber-track,
+.voicebridge-inline-player.vb-dark-surface .vb-scrubber-track {
+  background: #3c4043;
 }
 
 /* High contrast & UDL theme adaptations */
 .vb-theme-high-contrast .voicebridge-inline-player.vb-gdoc-comment-card {
+  /* accent + hover come from --vb-primary, which the theme already overrides */
+  --vb-player-accent-ring: rgba(250, 204, 21, 0.35);
+  --vb-player-accent-soft: #1e293b;
+  --vb-player-speed: #fef08a;
+  --vb-player-on-accent: #000000;
+  --vb-player-icon: #fef08a;
   background: #000000;
   border: 2px solid #facc15;
   color: #ffffff;
@@ -677,20 +947,20 @@
 .vb-theme-high-contrast .vb-gdoc-timestamp,
 .vb-theme-high-contrast .vb-gdoc-time-current,
 .vb-theme-high-contrast .vb-gdoc-time-duration,
-.vb-theme-high-contrast .vb-time-display {
+.vb-theme-high-contrast .vb-time-display,
+.vb-theme-high-contrast .vb-gdoc-menu-btn {
   color: #fef08a;
 }
 
 .vb-theme-high-contrast .vb-gdoc-play-btn,
 .vb-theme-high-contrast .vb-play-btn {
-  background: #facc15;
   color: #000000;
 }
 
-.vb-theme-high-contrast .vb-gdoc-restart-btn {
+.vb-theme-high-contrast .vb-gdoc-circle-btn:hover,
+.vb-theme-high-contrast .vb-gdoc-menu-btn:hover {
   background: #1e293b;
-  color: #ffffff;
-  border-color: #facc15;
+  color: #facc15;
 }
 
 .vb-theme-high-contrast .vb-gdoc-scrubber-track,
@@ -703,24 +973,227 @@
   background: #facc15;
 }
 
-/* Injected Classroom Private Comment Mic Icon */
+.vb-theme-high-contrast .vb-gdoc-speed-btn:hover {
+  background: #1e293b;
+}
+
+.vb-theme-high-contrast .voicebridge-inline-player.vb-bubble-variant::before {
+  border-top-color: #facc15;
+}
+
+.vb-theme-high-contrast .voicebridge-inline-player.vb-bubble-variant::after {
+  border-top-color: #000000;
+}
+
+.vb-theme-high-contrast .voicebridge-inline-player.vb-bubble-variant.vb-tail-top::before {
+  border-bottom-color: #facc15;
+}
+
+.vb-theme-high-contrast .voicebridge-inline-player.vb-bubble-variant.vb-tail-top::after {
+  border-bottom-color: #000000;
+}
+
+/* Reduced motion: keep the bubble, drop the animation */
+@media (prefers-reduced-motion: reduce) {
+  #voicebridge-voice-bubble {
+    animation: none;
+  }
+  .vb-gdoc-btn,
+  .voicebridge-inline-player.vb-gdoc-comment-card {
+    transition: none;
+  }
+}
+
+/* --- In-box recorder: mic button that sits inside a comment box --- */
 .vb-injected-mic-btn {
-  display: inline-flex;
+  position: fixed;
+  z-index: 9999998;
+  display: none;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
   border-radius: 50%;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: var(--vb-primary-light);
+  border: 1px solid var(--vb-primary-tint);
   color: var(--vb-primary);
   cursor: pointer;
-  margin: 0 4px;
-  transition: all 0.15s;
+  transition: background 0.15s, transform 0.15s;
   outline: none;
 }
 
 .vb-injected-mic-btn:hover {
-  background: #dbeafe;
-  transform: scale(1.1);
+  background: var(--vb-primary-tint);
+  transform: scale(1.08);
+}
+
+.vb-injected-mic-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+}
+
+/* Recording bar, overlaid on the comment box while recording */
+.vb-inbox-recorder {
+  position: fixed;
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  background: #ffffff;
+  border: 2px solid var(--vb-primary);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.18);
+  font-family: 'Google Sans', Roboto, var(--vb-font-family), system-ui, sans-serif;
+  font-size: 13px;
+  color: #202124;
+  overflow: hidden;
+}
+
+.vb-inbox-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s;
+  outline: none;
+}
+
+.vb-inbox-cancel {
+  background: #f1f3f4;
+  color: #5f6368;
+}
+
+.vb-inbox-cancel:hover {
+  background: #e8eaed;
+  color: #202124;
+}
+
+.vb-inbox-done {
+  background: var(--vb-primary);
+  color: #ffffff !important;
+  margin-left: auto;
+}
+
+.vb-inbox-done:hover {
+  background: var(--vb-primary-hover);
+}
+
+.vb-inbox-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
+}
+
+.vb-inbox-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: vbInboxPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes vbInboxPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* Live input level */
+.vb-inbox-level {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 18px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.vb-inbox-level i {
+  display: block;
+  width: 2px;
+  height: 3px;
+  border-radius: 999px;
+  background: #a5b4fc;
+  transition: height 0.08s linear;
+}
+
+.vb-inbox-timer {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #5f6368;
+}
+
+/* Last 30 seconds before the recording cap. The timer flips to time remaining,
+   so the automatic stop is announced rather than sprung on the speaker. */
+.vb-inbox-timer.vb-inbox-timer-ending,
+.vb-timer.vb-timer-ending {
+  color: var(--vb-danger);
+  font-weight: 700;
+}
+
+.vb-inbox-status {
+  flex: 1;
+  padding: 0 4px;
+  color: #5f6368;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Microphone appears to be muted */
+.vb-inbox-silent {
+  border-color: var(--vb-warning);
+}
+
+.vb-inbox-silent .vb-inbox-dot {
+  background: var(--vb-warning);
+}
+
+/* High contrast & UDL theme adaptations */
+.vb-theme-high-contrast .vb-injected-mic-btn {
+  background: #000000;
+  border-color: #facc15;
+  color: #facc15;
+}
+
+.vb-theme-high-contrast .vb-inbox-recorder {
+  background: #000000;
+  border-color: #facc15;
+  color: #ffffff;
+}
+
+.vb-theme-high-contrast .vb-inbox-done {
+  color: #000000;
+}
+
+.vb-theme-high-contrast .vb-inbox-cancel {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.vb-theme-high-contrast .vb-inbox-timer,
+.vb-theme-high-contrast .vb-inbox-status {
+  color: #fef08a;
+}
+
+.vb-theme-high-contrast .vb-inbox-level i {
+  background: #facc15;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vb-inbox-dot { animation: none; }
+  .vb-injected-mic-btn,
+  .vb-inbox-btn,
+  .vb-inbox-level i { transition: none; }
 }
