@@ -430,8 +430,7 @@ that nothing styled or selected. Report failures through the `.vb-gdoc-error` ro
 - **Tests pin root causes, not symptoms.** See `test_canvas_guard_excludes_only_the_drawing_surface` — it asserts on the *contents of the constant*, not on whole-file text, so the specific failure cannot return.
 - **Colours come from tokens, never literals** — `--vb-primary` and the `--vb-player-*` family. A test asserts the old blue is absent from both stylesheets.
 - **Privacy guards fail closed and live on a single path.**
-- Commit messages end with:
-  `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`
+- Maintain pair-programming acknowledgments in the root `README.md`.
 - **Do not commit or push unless asked.**
 
 ---

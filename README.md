@@ -168,7 +168,16 @@ Review our complete Student Privacy Policy in [voicebridge-extension/PRIVACY_POL
 
 ---
 
+## 🙏 Acknowledgments
+
+VoiceBridge is created and maintained by **Andrew Gitner**, developed with pair-programming assistance from:
+* **Google Antigravity** — System architecture, open-source governance, licensing isolation, and repository infrastructure.
+* **Anthropic Claude** — Audio player integration, accessibility test suite, and Classroom private comment gating.
+
+---
+
 ## 📄 License & Intellectual Property
 
 * **Extension Source Code (`voicebridge-extension/`)**: Released under the [MIT License](LICENSE).
 * **Website & Brand Assets (`index.html`, `assets/`, logos, trademarks)**: Proprietary. All Rights Reserved. See [LICENSE](LICENSE) for full legal terms.
+
