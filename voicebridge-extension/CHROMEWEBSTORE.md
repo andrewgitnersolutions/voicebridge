@@ -132,6 +132,7 @@ https://voicebridge-ext.web.app/privacy-policy.html (See `PRIVACY_POLICY.md` for
 
 | Version | Date | Changes | Status |
 | :--- | :--- | :--- | :--- |
+| 1.2.1 | 2026-09-09 | UI/Accessibility: Floating "Record Voice" trigger button is now freely draggable with viewport boundary clamping and storage persistence across page loads; raised default offset so it never obscures Google Classroom comment box or submit buttons. No permission or OAuth scope changes. | Ready for Submission |
 | 1.2.0 | 2026-09-04 | Privacy: removed a shared audio cache key that could serve one user's recording to another on a shared profile; Classroom private/public detection now works in 20+ languages and fails closed. Reliability: 5-minute recording cap with countdown, bounded local cache, recording state survives service-worker eviction, deadlines on stop/upload, wrong-Google-account detection before upload. Accessibility: OpenDyslexic now actually bundled and loading, working timeline seeking, slider role with spoken times, dark-surface support, remembered playback speed, live level meter and silence warning reconnected. No permission or OAuth scope changes. | Ready for Submission |
 | 1.1.0 | 2026-08-27 | Added Google Forms Read-Aloud feature: browser-native TTS with karaoke-style word highlighting for all Google Forms questions, descriptions, and answer options. | Ready for Submission |
 | 1.0.0 | 2026-08-25 | Initial production release with UDL accessibility, Google Classroom Private Comments injection, and Student Drive direct upload pipeline. | Published |

@@ -89,11 +89,12 @@
 /* --- Floating VoiceBridge Trigger Pill --- */
 #voicebridge-floating-trigger {
   position: fixed;
-  bottom: 24px;
+  bottom: 84px;
   right: 24px;
   z-index: 9999999;
   font-family: var(--vb-font-family);
   user-select: none;
+  touch-action: none;
 }
 
 .vb-floating-btn {
@@ -107,17 +108,29 @@
   border: 2px solid transparent;
   border-radius: 9999px;
   box-shadow: var(--vb-shadow);
-  cursor: pointer;
+  cursor: grab;
   font-size: 15px;
   font-weight: 600;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
+  user-select: none;
 }
 
 .vb-floating-btn:hover {
   background-color: var(--vb-primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
+}
+
+.vb-floating-btn:active,
+.vb-floating-btn.vb-dragging {
+  cursor: grabbing !important;
+}
+
+.vb-floating-btn.vb-dragging {
+  transform: scale(1.03);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+  transition: none !important;
 }
 
 .vb-floating-btn:focus-visible {

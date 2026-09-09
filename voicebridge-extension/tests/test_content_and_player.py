@@ -157,6 +157,20 @@ class TestContentAndPlayer(unittest.TestCase):
         self.assertIn('URL.revokeObjectURL(bubble.blobUrl)', self.content_js)
         self.assertIn('onDismiss', self.player_js)
 
+    def test_floating_button_is_draggable_and_persisted(self):
+        """Floating trigger must be draggable, boundary-clamped, and position-saved."""
+        self.assertIn('floatingBtnPosition', self.content_js)
+        self.assertIn('clampPosition', self.content_js)
+        self.assertIn('pointerdown', self.content_js)
+        self.assertIn('pointermove', self.content_js)
+        self.assertIn('pointerup', self.content_js)
+        self.assertIn('setPointerCapture', self.content_js)
+        self.assertIn('vb-dragging', self.content_js)
+        self.assertIn('DRAG_THRESHOLD_PX', self.content_js)
+        self.assertIn('cursor: grab', self.content_css)
+        self.assertIn('touch-action: none', self.content_css)
+        self.assertIn('.vb-dragging', self.content_css)
+
     def test_bubble_anchors_to_the_floating_button(self):
         # The bubble only appears for flows with no comment box, which start from
         # the floating Record button

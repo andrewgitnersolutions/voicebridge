@@ -117,14 +117,14 @@
   // class, so it gets a stricter gate than Docs and Slides (see isPublicClassStream).
   const IS_CLASSROOM = location.hostname === 'classroom.google.com';
 
-  // 1. Inject Persistent Floating Trigger
+  // 1. Inject Persistent Floating Trigger (Draggable & Position-Persisted)
   function injectFloatingTrigger() {
     if (document.getElementById('voicebridge-floating-trigger')) return;
 
     const container = document.createElement('div');
     container.id = 'voicebridge-floating-trigger';
     container.innerHTML = `
-      <button class="vb-floating-btn" id="vb-open-modal-btn" aria-label="Open VoiceBridge recording tool" title="Record Voice Response">
+      <button class="vb-floating-btn" id="vb-open-modal-btn" aria-label="Open VoiceBridge recording tool (drag to reposition)" title="Record Voice Response (drag to reposition)">
         <span class="vb-floating-icon">🎙️</span>
         <span class="vb-btn-label">Record Voice</span>
       </button>
@@ -133,8 +133,133 @@
     document.body.appendChild(container);
 
     const btn = container.querySelector('#vb-open-modal-btn');
-    btn.addEventListener('click', () => {
+
+    function clampPosition(left, top, elWidth, elHeight) {
+      const margin = 8;
+      const vw = window.innerWidth || 1024;
+      const vh = window.innerHeight || 768;
+      const w = elWidth || 160;
+      const h = elHeight || 44;
+      const maxLeft = Math.max(margin, vw - w - margin);
+      const maxTop = Math.max(margin, vh - h - margin);
+      return {
+        x: Math.min(Math.max(margin, left), maxLeft),
+        y: Math.min(Math.max(margin, top), maxTop)
+      };
+    }
+
+    // Restore saved position from chrome.storage.local
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      try {
+        chrome.storage.local.get(['floatingBtnPosition'], (data) => {
+          if (data && data.floatingBtnPosition && typeof data.floatingBtnPosition.left === 'number' && typeof data.floatingBtnPosition.top === 'number') {
+            const rect = container.getBoundingClientRect();
+            const clamped = clampPosition(data.floatingBtnPosition.left, data.floatingBtnPosition.top, rect.width || 160, rect.height || 44);
+            container.style.left = `${clamped.x}px`;
+            container.style.top = `${clamped.y}px`;
+            container.style.right = 'auto';
+            container.style.bottom = 'auto';
+          }
+        });
+      } catch (_) {}
+    }
+
+    // Drag handling
+    let isPointerDown = false;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+    const DRAG_THRESHOLD_PX = 5;
+
+    btn.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      isPointerDown = true;
+      isDragging = false;
+      startX = e.clientX;
+      startY = e.clientY;
+
+      const rect = container.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      try {
+        btn.setPointerCapture(e.pointerId);
+      } catch (_) {}
+    });
+
+    btn.addEventListener('pointermove', (e) => {
+      if (!isPointerDown) return;
+
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+      const distance = Math.hypot(deltaX, deltaY);
+
+      if (!isDragging && distance >= DRAG_THRESHOLD_PX) {
+        isDragging = true;
+        btn.classList.add('vb-dragging');
+      }
+
+      if (isDragging) {
+        e.preventDefault();
+        const rect = container.getBoundingClientRect();
+        const clamped = clampPosition(initialLeft + deltaX, initialTop + deltaY, rect.width, rect.height);
+        container.style.left = `${clamped.x}px`;
+        container.style.top = `${clamped.y}px`;
+        container.style.right = 'auto';
+        container.style.bottom = 'auto';
+      }
+    });
+
+    function endDrag(e) {
+      if (!isPointerDown) return;
+      isPointerDown = false;
+
+      try {
+        if (btn.hasPointerCapture(e.pointerId)) {
+          btn.releasePointerCapture(e.pointerId);
+        }
+      } catch (_) {}
+
+      if (isDragging) {
+        btn.classList.remove('vb-dragging');
+        const rect = container.getBoundingClientRect();
+        const savedPos = { left: Math.round(rect.left), top: Math.round(rect.top) };
+
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+          try {
+            chrome.storage.local.set({ floatingBtnPosition: savedPos });
+          } catch (_) {}
+        }
+
+        // Keep isDragging flag true briefly to prevent click handler from opening modal
+        setTimeout(() => {
+          isDragging = false;
+        }, 60);
+      }
+    }
+
+    btn.addEventListener('pointerup', endDrag);
+    btn.addEventListener('pointercancel', endDrag);
+
+    btn.addEventListener('click', (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       openVoiceBridgeModal();
+    });
+
+    // Re-clamp if window is resized
+    window.addEventListener('resize', () => {
+      if (container.style.left && container.style.top) {
+        const rect = container.getBoundingClientRect();
+        const clamped = clampPosition(rect.left, rect.top, rect.width, rect.height);
+        container.style.left = `${clamped.x}px`;
+        container.style.top = `${clamped.y}px`;
+      }
     });
   }
 
