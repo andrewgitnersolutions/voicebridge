@@ -57,9 +57,10 @@ voicebridge-extension/
 
 ## 🚀 Quick Start (Testing Unpacked)
 
-1. Clone or navigate to the directory:
+1. Clone or navigate to the extension directory:
    ```bash
-   cd /Users/andrewgitner/Desktop/Voicebridge/voicebridge-extension
+   git clone https://github.com/andrewgitnersolutions/voicebridge.git
+   cd voicebridge/voicebridge-extension
    ```
 2. Open Google Chrome and navigate to `chrome://extensions/`.
 3. Enable **Developer mode** (toggle in the top-right corner).
@@ -85,3 +86,4 @@ See [INSTALL_GUIDE.md](INSTALL_GUIDE.md) for full configuration details.
 ## 📄 License & Compliance
 
 Built for educational equity. Designed in full compliance with FERPA, COPPA, and GDPR.
+Source code licensed under the [MIT License](../LICENSE).

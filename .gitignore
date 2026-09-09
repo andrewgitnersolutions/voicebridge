@@ -25,7 +25,7 @@ venv/
 .idea/
 
 # Local GitHub workflows (not deployed via OAuth token without workflow scope)
-.github/
+.github/workflows/
 
 # Firebase
 .firebase/
