@@ -96,7 +96,7 @@
 
     <div class="policy-section">
       <p>
-        At <strong>VoiceBridge</strong>, we believe student privacy, emotional safety, and data security are foundational human rights. This Privacy Policy details our strict adherence to student privacy regulations and explains how VoiceBridge processes data for K-12 students, educators, and school districts.
+        At <strong>VoiceBridge</strong>, we believe student privacy, emotional safety, and data security are foundational human rights. This Student Data Privacy Policy details our strict adherence to federal, state, and international student privacy regulations and explains how VoiceBridge operates with a zero-developer-server, zero-data-collection footprint for K-12 students, educators, and school districts.
       </p>
     </div>
 
@@ -104,10 +104,11 @@
       <h2>1. Compliance with Student Privacy Regulations</h2>
       <p>VoiceBridge is designed from the ground up to comply with all major federal, state, and international student data privacy laws:</p>
       <ul>
-        <li><strong>FERPA (Family Educational Rights and Privacy Act):</strong> VoiceBridge recognizes student voice recordings as protected educational records. Audio files remain under the direct custody and control of the educational agency (the school district) inside the student’s Google Workspace tenant.</li>
-        <li><strong>COPPA (Children’s Online Privacy Protection Act):</strong> VoiceBridge does not knowingly collect personal information directly from children under 13 for commercial purposes. Use is authorized under school district consent for educational instructional purposes.</li>
-        <li><strong>GDPR (General Data Protection Regulation):</strong> VoiceBridge adheres to strict data minimization, purpose limitation, and storage limitation principles.</li>
-        <li><strong>State Student Privacy Acts (e.g., California SOPIPA, New York Ed Law 2-d):</strong> No student profiling, no targeted advertising, and zero monetization of student data.</li>
+        <li><strong>FERPA (Family Educational Rights and Privacy Act — 34 CFR Part 99):</strong> VoiceBridge treats student voice recordings and comments as protected educational records. VoiceBridge operates as a designated <strong>"School Official"</strong> with a legitimate educational interest pursuant to 34 CFR § 99.31(a)(1)(i)(B). VoiceBridge performs an institutional service for which the educational institution would otherwise use its own employees, remains under the direct control and custody of the school district regarding the maintenance of education records, and will never redisclose or monetize student records. Audio files reside exclusively inside the student’s and district’s Google Workspace tenant.</li>
+        <li><strong>COPPA (Children’s Online Privacy Protection Act — 16 CFR Part 312):</strong> VoiceBridge does not collect, solicit, or maintain personal information directly from children under 13 for commercial purposes. Pursuant to Federal Trade Commission (FTC) guidance, educational institutions and teachers are authorized to consent to student use of educational software on behalf of parents for educational and instructional purposes.</li>
+        <li><strong>Zero Biometric Identifiers (BIPA & State Biometric Law Compliance):</strong> VoiceBridge records standard acoustic audio files solely for human playback and grading between students and teachers. VoiceBridge <strong>does NOT</strong> extract, generate, scan, process, or store "voiceprints", vocal geometries, voice biometric templates, or any biometric identifiers or biometric information as defined under the Illinois Biometric Information Privacy Act (740 ILCS 14/1 et seq.), the Texas Capture or Use of Biometric Identifier Act (Tex. Bus. & Com. Code § 503.001), or any other state or federal biometric privacy statute.</li>
+        <li><strong>GDPR & International Frameworks:</strong> VoiceBridge adheres to strict data minimization, storage limitation, and purpose limitation. No user data leaves the user's controlled cloud environment.</li>
+        <li><strong>State Student Privacy Acts (e.g., California SOPIPA, New York Ed Law 2-d, Colorado Student Data Transparency and Security Act):</strong> VoiceBridge strictly prohibits student behavioral profiling, commercial targeted advertising, and the sale or licensing of student information.</li>
       </ul>
     </div>
 
@@ -117,7 +118,7 @@
         <h3 style="margin-bottom: 10px; color: var(--brand-accent);">Client-Side Direct Upload Architecture</h3>
         <p>VoiceBridge operates on a decentralized, serverless client architecture:</p>
         <ul>
-          <li><strong>No External Audio Servers:</strong> Student voice recordings are <strong>never sent to or stored on developer-owned servers or third-party cloud databases</strong>.</li>
+          <li><strong>No External Audio Servers:</strong> Student voice recordings are <strong>never sent to, routed through, or stored on developer-owned servers or third-party cloud databases</strong>.</li>
           <li><strong>Direct Student Ownership:</strong> When a student records audio, the file is uploaded <strong>directly from the student’s browser to their own district Google Drive account</strong> into a folder named <code>VoiceBridge Recordings</code>.</li>
           <li><strong>No Account Creation:</strong> Students and teachers do not create a separate VoiceBridge account, username, or password. Authentication is handled natively via Google Workspace Single Sign-On (SSO).</li>
         </ul>
@@ -125,14 +126,17 @@
     </div>
 
     <div class="policy-section">
-      <h2>3. Google Permissions & Least-Privilege Scopes</h2>
+      <h2>3. Permissions, Local Storage & Least-Privilege Scopes</h2>
       <p>VoiceBridge requests the absolute minimum permissions required to function:</p>
       <ul>
         <li><strong>Google Drive API Scope (<code>https://www.googleapis.com/auth/drive.file</code>):</strong>
           <br><em>What this means:</em> VoiceBridge is granted permission <strong>only to access and create files that VoiceBridge itself created</strong>.
           <br><em>What VoiceBridge CANNOT do:</em> VoiceBridge <strong>cannot read, list, view, modify, or delete any other files, folders, or documents</strong> in the student’s Google Drive.
         </li>
+        <li><strong>Chrome Identity API (<code>identity</code>):</strong> Used exclusively to request an OAuth2 access token directly from Google on the local device. This token is used strictly within the local browser runtime to authenticate the direct upload into Google Drive. The token is never logged, transmitted to, or stored on any external server.</li>
+        <li><strong>Local Extension Storage (<code>storage</code>):</strong> VoiceBridge utilizes Chrome extension local storage (<code>chrome.storage.local</code>) exclusively to store user interface and accessibility preferences (such as selected Lexend or OpenDyslexic typography, high-contrast visual themes, and playback speed). No personal information, student credentials, or audio recordings are stored in extension storage.</li>
         <li><strong>Microphone Access:</strong> Used solely in real-time to capture audio input during active recording sessions. Audio streams are discarded immediately upon file generation.</li>
+        <li><strong>Chrome Offscreen API (<code>offscreen</code>):</strong> Used solely to host a local audio recording worker in compliance with Manifest V3 background service worker standards.</li>
       </ul>
     </div>
 
@@ -146,7 +150,14 @@
     </div>
 
     <div class="policy-section">
-      <h2>5. Data Retention & Deletion</h2>
+      <h2>5. Classroom Audio Recording & Wiretapping Consent</h2>
+      <p>
+        In compliance with federal and state audio recording and wiretapping laws (including two-party or all-party consent states such as California, Florida, Illinois, Pennsylvania, and Massachusetts), the deploying school district, educator, and user are responsible for ensuring that appropriate notice is provided and any legally required consents are obtained prior to initiating audio recordings in educational settings.
+      </p>
+    </div>
+
+    <div class="policy-section">
+      <h2>6. Data Retention & Deletion</h2>
       <p>Because all recordings reside in the student's own Google Drive account:</p>
       <ul>
         <li>The school district, student, or parent may delete recordings at any time directly through Google Drive.</li>
@@ -155,10 +166,10 @@
     </div>
 
     <div class="policy-section">
-      <h2>6. District Inquiries & Contact Information</h2>
+      <h2>7. District Inquiries & Contact Information</h2>
       <p>For questions regarding student data privacy, district Data Protection Agreements (DPAs), or accessibility compliance:</p>
       <div class="policy-card">
-        <p><strong>Email:</strong> privacy@voicebridge.app</p>
+        <p><strong>Email:</strong> <a href="mailto:privacy@voicebridge.app">privacy@voicebridge.app</a></p>
         <p><strong>Website:</strong> <a href="https://voicebridge-ext.web.app">https://voicebridge-ext.web.app</a></p>
         <p><strong>GitHub Repository:</strong> <a href="https://github.com/andrewgitnersolutions/voicebridge" target="_blank" rel="noopener">https://github.com/andrewgitnersolutions/voicebridge</a></p>
       </div>
