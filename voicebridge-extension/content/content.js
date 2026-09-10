@@ -527,6 +527,10 @@
 
     renderCurrentState();
 
+    if (window.VoiceBridgeOnboarding) {
+      window.VoiceBridgeOnboarding.notifyModalOpened();
+    }
+
     if (userSettings.autoStartRecording) {
       startRecording();
     }
@@ -565,6 +569,10 @@
       activeModal = null;
     }
     recordingState = 'IDLE';
+
+    if (window.VoiceBridgeOnboarding) {
+      window.VoiceBridgeOnboarding.notifyModalClosed();
+    }
   }
 
   // Render UI according to state machine (IDLE | READY | STARTING | RECORDING | STOPPING | REVIEW | UPLOADING)
@@ -811,6 +819,9 @@
       if (res && res.success) {
         recordingState = 'RECORDING';
         renderCurrentState();
+        if (window.VoiceBridgeOnboarding) {
+          window.VoiceBridgeOnboarding.notifyRecordingStarted();
+        }
       } else {
         if (res?.permissionRequired || res?.error?.includes('NotAllowedError') || res?.error?.includes('Permission')) {
           showToastNotification('🎙️ Microphone setup opened in a new tab. Click "Allow" once to enable recording.');
@@ -853,6 +864,9 @@
         recordedDuration = res.durationSeconds || secondsElapsed;
         recordingState = 'REVIEW';
         renderCurrentState();
+        if (window.VoiceBridgeOnboarding) {
+          window.VoiceBridgeOnboarding.notifyRecordingStopped();
+        }
       } else {
         showToastNotification('⚠️ Recording failed: ' + (res?.error || 'Unknown error'));
         closeModal();
@@ -890,6 +904,9 @@
           });
         });
         closeModal();
+        if (window.VoiceBridgeOnboarding) {
+          window.VoiceBridgeOnboarding.notifyRecordingFinished();
+        }
       } else if (res?.data?.reason === 'account_mismatch') {
         showToastNotification(accountMismatchMessage(res.data), 12000);
         recordingState = 'REVIEW';
@@ -1195,6 +1212,10 @@
     });
 
     positionInboxUI();
+
+    if (window.VoiceBridgeOnboarding) {
+      window.VoiceBridgeOnboarding.notifyInboxButtonsUpdated();
+    }
   }
 
   function positionInboxUI() {
@@ -1310,6 +1331,10 @@
     });
     overlay.querySelector('.vb-inbox-done').focus();
 
+    if (window.VoiceBridgeOnboarding && typeof window.VoiceBridgeOnboarding.notifyInboxRecordingStarted === 'function') {
+      window.VoiceBridgeOnboarding.notifyInboxRecordingStarted();
+    }
+
     inboxRecorder.timerId = setInterval(() => {
       if (!inboxRecorder) return;
       inboxRecorder.seconds++;
@@ -1345,6 +1370,9 @@
       chrome.runtime.sendMessage({ action: 'CANCEL_RECORDING' });
     }
     teardownInboxRecorder();
+    if (window.VoiceBridgeOnboarding && typeof window.VoiceBridgeOnboarding.notifyInboxRecordingCancelled === 'function') {
+      window.VoiceBridgeOnboarding.notifyInboxRecordingCancelled();
+    }
   }
 
   function finishInboxRecording() {
@@ -1398,6 +1426,13 @@
           }
           if (typeof window.__voicebridgeScanAndRenderPlayers === 'function') {
             setTimeout(() => window.__voicebridgeScanAndRenderPlayers(), 50);
+          }
+          if (window.VoiceBridgeOnboarding) {
+            if (typeof window.VoiceBridgeOnboarding.notifyInboxRecordingFinished === 'function') {
+              window.VoiceBridgeOnboarding.notifyInboxRecordingFinished(input);
+            } else {
+              window.VoiceBridgeOnboarding.notifyRecordingFinished();
+            }
           }
         } else if (up?.data?.reason === 'account_mismatch') {
           showToastNotification(accountMismatchMessage(up.data), 12000);

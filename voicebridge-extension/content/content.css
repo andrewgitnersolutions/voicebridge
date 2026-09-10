@@ -152,7 +152,7 @@
   inset: 0 !important;
   background: rgba(15, 23, 42, 0.65) !important;
   backdrop-filter: blur(4px) !important;
-  z-index: 2147483647 !important; /* Max 32-bit integer z-index prevents overlay clickjacking */
+  z-index: 2147483620 !important; /* Above page host content, below extension onboarding guide */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -165,8 +165,8 @@
 }
 
 @keyframes vbFadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .vb-card {

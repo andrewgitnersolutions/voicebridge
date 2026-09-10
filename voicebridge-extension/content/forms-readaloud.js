@@ -104,7 +104,7 @@
   function isFormsResponsePage() {
     const path = window.location.pathname;
     return (
-      path.includes('/forms/') &&
+      (path.includes('/forms/') || path.includes('test-forms')) &&
       !path.includes('/edit') &&
       !path.includes('/admin')
     );
@@ -656,6 +656,10 @@
     containers.forEach((container) => {
       injectReadAloudButton(container);
     });
+
+    if (containers.length > 0) {
+      triggerFormsOnboardingAfterDelay();
+    }
   }
 
   /**
@@ -754,6 +758,379 @@
   }
 
   // ================================================================
+  // GOOGLE FORMS READ-ALOUD ONBOARDING
+  // ================================================================
+
+  const STORAGE_KEY_FORMS_COUNT = 'vb_forms_onboarding_count';
+  const MAX_FORMS_ONBOARDING_SESSIONS = 3;
+
+  let formsCompletedCount = 0;
+  let formsOnboardingDismissed = false;
+  let activeFormsOverlay = null;
+  let activeFormsSpotlight = null;
+  let activeFormsCard = null;
+  let activeFormsFadedTip = null;
+  let formsOnboardingTimer = null;
+  let isFormsCardSpeaking = false;
+
+  function loadFormsOnboardingCount(callback) {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      const storage = chrome.storage.sync || chrome.storage.local;
+      if (storage) {
+        try {
+          storage.get([STORAGE_KEY_FORMS_COUNT], (res) => {
+            formsCompletedCount = res && typeof res[STORAGE_KEY_FORMS_COUNT] === 'number'
+              ? res[STORAGE_KEY_FORMS_COUNT]
+              : 0;
+            callback(formsCompletedCount);
+          });
+          return;
+        } catch (_) {}
+      }
+    }
+    callback(0);
+  }
+
+  function incrementFormsOnboardingCount() {
+    formsCompletedCount = Math.min(formsCompletedCount + 1, MAX_FORMS_ONBOARDING_SESSIONS);
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      const storage = chrome.storage.sync || chrome.storage.local;
+      if (storage) {
+        try {
+          const data = {};
+          data[STORAGE_KEY_FORMS_COUNT] = formsCompletedCount;
+          storage.set(data);
+        } catch (_) {}
+      }
+    }
+  }
+
+  function resetFormsOnboarding() {
+    formsCompletedCount = 0;
+    formsOnboardingDismissed = false;
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      const storage = chrome.storage.sync || chrome.storage.local;
+      if (storage) {
+        try {
+          const data = {};
+          data[STORAGE_KEY_FORMS_COUNT] = 0;
+          storage.set(data);
+        } catch (_) {}
+      }
+    }
+    checkAndTriggerFormsOnboarding();
+  }
+
+  function clampFormsCardPosition(targetRect, cardWidth = 360, cardHeight = 200) {
+    const margin = 16;
+    const vw = window.innerWidth || 1024;
+    const vh = window.innerHeight || 768;
+
+    if (!targetRect) {
+      return {
+        left: Math.round(Math.max(margin, (vw - cardWidth) / 2)),
+        top: Math.round(margin + 60)
+      };
+    }
+
+    let left = targetRect.left;
+    let top = targetRect.bottom + 12;
+
+    if (left + cardWidth > vw - margin) {
+      left = Math.max(margin, vw - cardWidth - margin);
+    }
+
+    if (top + cardHeight > vh - margin) {
+      top = Math.max(margin, targetRect.top - cardHeight - 12);
+    }
+
+    return {
+      left: Math.round(Math.max(margin, left)),
+      top: Math.round(Math.max(margin, top))
+    };
+  }
+
+  function positionFormsSpotlight(targetEl) {
+    if (!activeFormsSpotlight || !targetEl || !targetEl.isConnected) return;
+    const r = targetEl.getBoundingClientRect();
+    const pad = 6;
+    activeFormsSpotlight.style.left = `${Math.round(r.left - pad)}px`;
+    activeFormsSpotlight.style.top = `${Math.round(r.top - pad)}px`;
+    activeFormsSpotlight.style.width = `${Math.round(r.width + pad * 2)}px`;
+    activeFormsSpotlight.style.height = `${Math.round(r.height + pad * 2)}px`;
+  }
+
+  function positionFormsCard(targetEl) {
+    if (!activeFormsCard || !targetEl || !targetEl.isConnected) return;
+    const r = targetEl.getBoundingClientRect();
+    const cardRect = activeFormsCard.getBoundingClientRect();
+    const pos = clampFormsCardPosition(r, cardRect.width || 360, cardRect.height || 200);
+    activeFormsCard.style.left = `${pos.left}px`;
+    activeFormsCard.style.top = `${pos.top}px`;
+  }
+
+  function teardownFormsOnboarding() {
+    stopFormsCardSpeech();
+    if (activeFormsOverlay) {
+      activeFormsOverlay.remove();
+      activeFormsOverlay = null;
+      activeFormsSpotlight = null;
+      activeFormsCard = null;
+    }
+    if (activeFormsFadedTip) {
+      activeFormsFadedTip.remove();
+      activeFormsFadedTip = null;
+    }
+    const firstBtn = document.querySelector('.vb-ra-btn');
+    if (firstBtn) {
+      firstBtn.classList.remove('vb-ra-pulse-badge');
+    }
+  }
+
+  function dismissFormsOnboarding() {
+    formsOnboardingDismissed = true;
+    teardownFormsOnboarding();
+  }
+
+  function stopFormsCardSpeech() {
+    if ('speechSynthesis' in window && isFormsCardSpeaking) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
+    isFormsCardSpeaking = false;
+    updateFormsTtsBtnState(false);
+  }
+
+  function speakFormsOnboardingText(text) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      if (isFormsCardSpeaking) {
+        isFormsCardSpeaking = false;
+        updateFormsTtsBtnState(false);
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.lang = 'en-US';
+      if (selectedVoice) utterance.voice = selectedVoice;
+
+      utterance.onstart = () => {
+        isFormsCardSpeaking = true;
+        updateFormsTtsBtnState(true);
+      };
+      utterance.onend = () => {
+        isFormsCardSpeaking = false;
+        updateFormsTtsBtnState(false);
+      };
+      utterance.onerror = () => {
+        isFormsCardSpeaking = false;
+        updateFormsTtsBtnState(false);
+      };
+      window.speechSynthesis.speak(utterance);
+    } catch (_) {
+      isFormsCardSpeaking = false;
+      updateFormsTtsBtnState(false);
+    }
+  }
+
+  function updateFormsTtsBtnState(speaking) {
+    const btn = activeFormsCard ? activeFormsCard.querySelector('.vb-onboard-tts-btn') : null;
+    if (btn) {
+      if (speaking) {
+        btn.classList.add('vb-speaking');
+        btn.setAttribute('aria-label', 'Stop reading aloud');
+      } else {
+        btn.classList.remove('vb-speaking');
+        btn.setAttribute('aria-label', 'Listen to instructions read aloud');
+      }
+    }
+  }
+
+  function triggerFormsOnboardingAfterDelay() {
+    if (formsOnboardingTimer) clearTimeout(formsOnboardingTimer);
+    formsOnboardingTimer = setTimeout(() => {
+      checkAndTriggerFormsOnboarding();
+    }, 600);
+  }
+
+  function checkAndTriggerFormsOnboarding() {
+    if (formsOnboardingDismissed) return;
+
+    loadFormsOnboardingCount((count) => {
+      if (count >= MAX_FORMS_ONBOARDING_SESSIONS) return;
+
+      const firstBtn = document.querySelector('.vb-ra-btn');
+      if (!firstBtn) return;
+
+      if (count === 0) {
+        showFormsTour(firstBtn);
+      } else {
+        showFormsFadedTip(firstBtn, count);
+      }
+    });
+  }
+
+  function showFormsTour(btn) {
+    if (activeFormsOverlay || formsOnboardingDismissed) return;
+
+    btn.classList.add('vb-ra-pulse-badge');
+
+    activeFormsOverlay = document.createElement('div');
+    activeFormsOverlay.className = 'vb-onboarding-overlay';
+    activeFormsOverlay.setAttribute('role', 'region');
+    activeFormsOverlay.setAttribute('aria-label', 'VoiceBridge Forms Read-Aloud Guide');
+
+    activeFormsSpotlight = document.createElement('div');
+    activeFormsSpotlight.className = 'vb-onboard-spotlight';
+    activeFormsOverlay.appendChild(activeFormsSpotlight);
+
+    activeFormsCard = document.createElement('div');
+    activeFormsCard.className = 'vb-onboard-card';
+    activeFormsCard.setAttribute('role', 'dialog');
+    activeFormsCard.setAttribute('aria-modal', 'false');
+    activeFormsCard.setAttribute('aria-live', 'polite');
+
+    const speechText = 'VoiceBridge Read Aloud: Click the VoiceBridge button next to any question to hear it read aloud with word highlighting.';
+
+    activeFormsCard.innerHTML = `
+      <div class="vb-onboard-header">
+        <span class="vb-onboard-step-badge">🔊 Read Aloud Tool</span>
+        <div class="vb-onboard-header-actions">
+          <button type="button" class="vb-onboard-tts-btn" title="Read aloud" aria-label="Listen to instructions read aloud">🔊</button>
+          <button type="button" class="vb-onboard-skip-btn" title="Dismiss guide (Esc)" aria-label="Skip onboarding guide">✕</button>
+        </div>
+      </div>
+      <div class="vb-onboard-body">
+        <div class="vb-onboard-icon">🔊</div>
+        <div class="vb-onboard-content">
+          <h3 class="vb-onboard-title">Listen to Questions!</h3>
+          <p class="vb-onboard-desc">Click the VoiceBridge 🎙️ button next to any question to hear it read aloud with karaoke word highlighting!</p>
+        </div>
+      </div>
+      <div class="vb-onboard-actions">
+        <button type="button" class="vb-onboard-btn-primary vb-forms-got-it">Got It! ✓</button>
+      </div>
+    `;
+
+    activeFormsCard.addEventListener('mousedown', (e) => e.preventDefault());
+
+    const ttsBtn = activeFormsCard.querySelector('.vb-onboard-tts-btn');
+    if (ttsBtn) {
+      ttsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        speakFormsOnboardingText(speechText);
+      });
+    }
+
+    const skipBtn = activeFormsCard.querySelector('.vb-onboard-skip-btn');
+    if (skipBtn) {
+      skipBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dismissFormsOnboarding();
+      });
+    }
+
+    const gotItBtn = activeFormsCard.querySelector('.vb-forms-got-it');
+    if (gotItBtn) {
+      gotItBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        incrementFormsOnboardingCount();
+        teardownFormsOnboarding();
+      });
+    }
+
+    // If student clicks the button itself, celebrate and complete
+    const onBtnClick = () => {
+      incrementFormsOnboardingCount();
+      if (activeFormsCard) {
+        const titleEl = activeFormsCard.querySelector('.vb-onboard-title');
+        const descEl = activeFormsCard.querySelector('.vb-onboard-desc');
+        if (titleEl) titleEl.textContent = 'Reading Aloud! 🎧';
+        if (descEl) descEl.textContent = 'Great job! You can click any question\'s button anytime to hear it read again.';
+        setTimeout(() => {
+          teardownFormsOnboarding();
+        }, 3500);
+      }
+    };
+    btn.addEventListener('click', onBtnClick, { once: true });
+
+    activeFormsOverlay.appendChild(activeFormsCard);
+    document.body.appendChild(activeFormsOverlay);
+
+    positionFormsSpotlight(btn);
+    positionFormsCard(btn);
+
+    window.addEventListener('resize', () => {
+      positionFormsSpotlight(btn);
+      positionFormsCard(btn);
+    });
+    window.addEventListener('scroll', () => {
+      positionFormsSpotlight(btn);
+      positionFormsCard(btn);
+    }, true);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && activeFormsOverlay) {
+        dismissFormsOnboarding();
+      }
+    });
+  }
+
+  function showFormsFadedTip(btn, count) {
+    if (activeFormsFadedTip || formsOnboardingDismissed) return;
+
+    btn.classList.add('vb-ra-pulse-badge');
+
+    activeFormsFadedTip = document.createElement('div');
+    activeFormsFadedTip.className = 'vb-onboard-faded-tip';
+    activeFormsFadedTip.addEventListener('mousedown', (e) => e.preventDefault());
+    activeFormsFadedTip.innerHTML = `
+      <div class="vb-onboard-faded-text">
+        <strong>Practice ${count + 1} of 3:</strong> Click 🎙️ next to any question to hear it read aloud!
+      </div>
+      <button type="button" class="vb-onboard-skip-btn" title="Dismiss tip" aria-label="Dismiss">✕</button>
+    `;
+
+    const skipBtn = activeFormsFadedTip.querySelector('.vb-onboard-skip-btn');
+    if (skipBtn) {
+      skipBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (activeFormsFadedTip) {
+          activeFormsFadedTip.remove();
+          activeFormsFadedTip = null;
+        }
+      });
+    }
+
+    const onBtnClick = () => {
+      incrementFormsOnboardingCount();
+      if (activeFormsFadedTip) {
+        activeFormsFadedTip.remove();
+        activeFormsFadedTip = null;
+      }
+    };
+    btn.addEventListener('click', onBtnClick, { once: true });
+
+    document.body.appendChild(activeFormsFadedTip);
+    const r = btn.getBoundingClientRect();
+    activeFormsFadedTip.style.left = `${Math.round(Math.max(16, r.right + 12))}px`;
+    activeFormsFadedTip.style.top = `${Math.round(Math.max(16, r.top - 8))}px`;
+
+    setTimeout(() => {
+      if (activeFormsFadedTip) {
+        activeFormsFadedTip.remove();
+        activeFormsFadedTip = null;
+      }
+    }, 9000);
+  }
+
+  // ================================================================
   // BOOTSTRAP
   // ================================================================
 
@@ -783,6 +1160,22 @@
 
     // Set up navigation listeners
     setupNavigationListener();
+
+    // Listen for reset message from popup or background
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+      chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request && request.action === 'RESTART_ONBOARDING') {
+          resetFormsOnboarding();
+          sendResponse({ success: true });
+        }
+      });
+    }
+
+    // Export for testing/debugging
+    window.VoiceBridgeFormsOnboarding = {
+      resetAndRestart: resetFormsOnboarding,
+      getCompletedCount: () => formsCompletedCount
+    };
 
     console.log('[VoiceBridge] Forms Read-Aloud initialized');
   }

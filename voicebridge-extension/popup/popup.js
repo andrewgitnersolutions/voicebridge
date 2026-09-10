@@ -216,12 +216,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (chrome.scripting) {
               await chrome.scripting.insertCSS({
                 target: { tabId: tab.id },
-                files: ['content/content.css']
+                files: ['content/content.css', 'content/onboarding.css']
               }).catch(() => {});
 
               await chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                files: ['content/player.js', 'content/content.js']
+                files: ['content/player.js', 'content/onboarding.js', 'content/content.js']
               });
 
               // Trigger recording in freshly injected content script
@@ -334,6 +334,44 @@ document.addEventListener('DOMContentLoaded', async () => {
       startMicTest();
     }
   });
+
+  // Replay Onboarding Guide handler for teachers, aides, and students
+  const btnReplayOnboarding = document.getElementById('btn-replay-onboarding');
+  const replayGuideStatus = document.getElementById('replay-guide-status');
+
+  if (btnReplayOnboarding) {
+    btnReplayOnboarding.addEventListener('click', async () => {
+      const storage = (typeof chrome !== 'undefined' && chrome.storage) ? (chrome.storage.sync || chrome.storage.local) : null;
+      const resetObj = {
+        vb_onboarding_completed_count: 0,
+        vb_comment_onboarding_count: 0,
+        vb_forms_onboarding_count: 0
+      };
+      if (storage) {
+        await storage.set(resetObj);
+      }
+      if (chrome.storage && chrome.storage.local) {
+        await chrome.storage.local.set(resetObj);
+      }
+
+      if (replayGuideStatus) {
+        replayGuideStatus.textContent = '✅ Guide reset! Open Classroom, Docs, or Forms to see it.';
+        replayGuideStatus.style.color = '#16a34a';
+      }
+
+      // Notify active tab to restart immediately
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab?.id) {
+          chrome.tabs.sendMessage(tab.id, { action: 'RESTART_ONBOARDING' }, () => {
+            if (chrome.runtime.lastError) {
+              // Ignore if content script isn't active on current tab
+            }
+          });
+        }
+      } catch (_) {}
+    });
+  }
 
   window.addEventListener('unload', () => {
     if (navigator.mediaDevices && navigator.mediaDevices.removeEventListener) {
